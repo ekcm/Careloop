@@ -32,7 +32,7 @@ export default function HomePage() {
       <ProgressBar tasks={tasks} />
 
       <div className="flex justify-between items-center mb-3">
-        <h3 className="font-semibold">Today's Tasks</h3>
+        <h3 className="font-semibold">Today&apos;s Tasks</h3>
         <Button variant="outline" size="sm" className="rounded-full">
           <Plus className="w-4 h-4 mr-1" /> Add Task
         </Button>
