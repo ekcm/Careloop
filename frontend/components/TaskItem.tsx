@@ -7,6 +7,7 @@ import { taskIconMap } from "@/lib/typing";
 
 type TaskItemProps = Task & {
   onToggle?: (id: string) => void;
+  onDelete?: (id: string) => void;
 };
 
 export default function TaskItem({
@@ -16,6 +17,7 @@ export default function TaskItem({
   icon,
   completed,
   onToggle,
+  onDelete,
 }: TaskItemProps) {
   return (
     <div

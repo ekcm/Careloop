@@ -26,6 +26,10 @@ export default function HomePage() {
     setTasks((prev) => [...prev, task]);
   };
 
+  const handleDeleteTask = (id: string) => {
+    setTasks((prev) => prev.filter((task) => task.id !== id));
+  };
+
   return (
     <div className="p-4 pb-20">
       <Header />
@@ -36,7 +40,7 @@ export default function HomePage() {
       </div>
       <div className="space-y-3">
         {tasks.map((task) => (
-          <TaskItem key={task.id} {...task} onToggle={toggleTask} />
+          <TaskItem key={task.id} {...task} onToggle={toggleTask} onDelete={handleDeleteTask} />
         ))}
       </div>
     </div>

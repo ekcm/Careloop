@@ -18,7 +18,7 @@ export default function ProgressBar({ tasks }: { tasks: Task[] }) {
         </div>
         <div className="flex flex-col items-end">
           <span className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">
-            {Math.round(progress)}%
+            {Math.round(progress) || 0}%
           </span>
           <span className="text-sm font-semibold">Complete</span>
         </div>
