@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { taskIconMap, type Task } from "@/lib/typing";
+import { type Task } from "@/lib/typing";
 import ProgressBar from "@/components/ProgressBar";
 import Header from "@/components/Header";
 import TaskItem from "@/components/TaskItem";

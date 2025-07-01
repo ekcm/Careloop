@@ -50,8 +50,6 @@ export default function TaskItem({
           className={cn(
             "w-7 h-7 transition-colors",
             completed ? "text-blue-500" : "text-gray-300"
-            "w-7 h-7 transition-colors",
-            completed ? "text-blue-500" : "text-gray-300"
           )}
         />
       </div>
