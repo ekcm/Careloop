@@ -17,6 +17,7 @@ export default function TaskItem({
   icon,
   completed,
   onToggle,
+  //eslint-disable-next-line @typescript-eslint/no-unused-vars
   onDelete,
 }: TaskItemProps) {
   return (

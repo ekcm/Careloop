@@ -35,7 +35,7 @@ export default function HomePage() {
       <Header />
       <ProgressBar tasks={tasks} />
       <div className="flex justify-between items-center mb-3">
-        <h3 className="font-semibold">Today's Tasks</h3>
+        <h3 className="font-semibold">Today&#39;s Tasks</h3>
         <AddTask onAdd={handleAddTask} />
       </div>
       <div className="space-y-3">
