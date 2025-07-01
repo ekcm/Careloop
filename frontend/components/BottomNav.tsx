@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
-import { Home, User } from "lucide-react"; 
+import { ListTodo, Pill, User } from "lucide-react";
 
 const navItems = [
-  { href: "/", icon: Home, label: "Home" },      
-  { href: "/profile", icon: User, label: "Profile" }, 
+  { href: "/",     icon: ListTodo, label: "To‑Do" },
+  { href: "/meds", icon: Pill,     label: "Meds" },
+  { href: "/account", icon: User,     label: "Account" },
 ];
 
 export default function BottomNav() {
