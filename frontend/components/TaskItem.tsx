@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Gift } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Task } from "@/lib/typing";
 import { taskIconMap } from "@/lib/typing";
@@ -44,8 +44,8 @@ export default function TaskItem({
         {/* <Gift className="w-4 h-4 text-yellow-500" /> */}
         <CheckCircle2
           className={cn(
-        "w-7 h-7 transition-colors",
-        completed ? "text-blue-500" : "text-gray-300"
+            "w-7 h-7 transition-colors",
+            completed ? "text-blue-500" : "text-gray-300"
           )}
         />
       </div>
