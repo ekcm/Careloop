@@ -43,7 +43,6 @@ export default function FireworksAnimation({
       fireworksInstance?.stop();
     };
   }, [toastText]);
-
   return (
     <div
       ref={containerRef}
