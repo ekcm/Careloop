@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, FC, ChangeEvent, MouseEvent, useEffect } from 'react';
 import { createClient, Session } from '@supabase/supabase-js';
+import { UserPage } from '@/components/account-page/UserPage';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'SUPABASE_URL';
 const supabaseAnonKey =
@@ -10,7 +11,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 /**
  * A simple notification component to display messages.
  */
-const Notification: FC<{
+export const Notification: FC<{
   message: string;
   onClose: () => void;
   isError?: boolean;
@@ -46,14 +47,18 @@ const AuthPage: FC = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
-    return () => subscription.unsubscribe();
-  }, []);
 
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+  
   /**
    * Shows a notification message for a few seconds.
    */
@@ -108,6 +113,27 @@ const AuthPage: FC = () => {
     }
   };
 
+ /**
+   * Handles the Google login process.
+   */
+ const handleGoogleLogin = async () => {
+  setLoading(true);
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+    });
+    if (error) throw error;
+    // After successful sign-in, Supabase redirects to your site.
+    // The onAuthStateChange listener will handle setting the session.
+  } catch {
+    showNotification(
+      'An error occurred while signing in with Google. Please try again.',
+      true
+    );
+    setLoading(false);
+  }
+};
+
   /**
    * Handles the user logout process.
    */
@@ -128,32 +154,19 @@ const AuthPage: FC = () => {
 
   if (session) {
     return (
-      <div className="w-full h-screen flex flex-col items-center justify-center p-4">
+      <>
         <Notification
           message={notification?.message || ''}
           isError={notification?.isError}
           onClose={() => setNotification(null)}
         />
-        <div className="w-full max-w-md p-8 space-y-6 text-center">
-          <h1 className="text-3xl font-bold text-gray-800">Welcome!</h1>
-          <p className="text-gray-600">You are logged in as:</p>
-          <p className="text-lg font-medium text-blue-400 break-all">
-            {session.user.email}
-          </p>
-          <button
-            onClick={handleLogout}
-            className="w-full px-4 py-2 mt-4 font-semibold text-white bg-red-400 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
-            disabled={loading}
-          >
-            {loading ? 'Logging out...' : 'Log Out'}
-          </button>
-        </div>
-      </div>
+        <UserPage session={session} handleLogout={handleLogout} loading={loading} />
+      </>
     );
   }
 
   return (
-    <div className="w-full h-screen flex items-center justify-center p-4">
+    <div className="w-full h-screen flex flex-col items-center justify-center p-4">
       <Notification
         message={notification?.message || ''}
         isError={notification?.isError}
@@ -228,6 +241,38 @@ const AuthPage: FC = () => {
           </div>
         </form>
       </div>
+      <div className="relative flex items-center justify-center my-4">
+          <div className="flex-grow border-t border-gray-300"></div>
+          <span className="flex-shrink mx-4 text-sm text-gray-400">OR</span>
+          <div className="flex-grow border-t border-gray-300"></div>
+        </div>
+
+        {/* Google Login Button */}
+        <button
+          onClick={handleGoogleLogin}
+          className="w-full flex items-center justify-center px-4 py-2 font-semibold text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 max-w-sm"
+          disabled={loading}
+        >
+          <svg className="w-5 h-5 mr-3" viewBox="0 0 48 48">
+            <path
+              fill="#FFC107"
+              d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039L38.804 8.841C34.435 4.962 29.522 3 24 3C12.955 3 4 11.955 4 23s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"
+            />
+            <path
+              fill="#FF3D00"
+              d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 13 24 13c3.059 0 5.842 1.154 7.961 3.039l4.843-4.841C34.435 4.962 29.522 3 24 3 16.318 3 9.656 6.703 6.306 12.691z"
+            />
+            <path
+              fill="#4CAF50"
+              d="M24 43c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 35c-4.438 0-8.28-2.686-10.036-6.453l-6.571 4.819A19.927 19.927 0 0 0 24 43z"
+            />
+            <path
+              fill="#1976D2"
+              d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C43.091 34.691 44 28.711 44 23c0-1.341-.138-2.65-.389-3.917z"
+            />
+          </svg>
+          {loading ? 'Redirecting...' : 'Sign In with Google'}
+        </button>
     </div>
   );
 };
