@@ -2,8 +2,15 @@
 
 import { useEffect, useRef } from 'react';
 import type { FireworksHandlers } from 'fireworks-js';
+import { toast } from 'sonner';
 
-export default function FireworksAnimation() {
+type FireworksAnimationProps = {
+  toastText?: string;
+};
+
+export default function FireworksAnimation({
+  toastText = 'Great job! Keep up the good work! 🎉',
+}: FireworksAnimationProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,7 +30,9 @@ export default function FireworksAnimation() {
         fireworksInstance.start();
 
         setTimeout(() => {
+          toast.dismiss();
           fireworksInstance?.stop();
+          toast.success(toastText, { duration: 6000 });
         }, 5000);
       }
     }
@@ -33,7 +42,7 @@ export default function FireworksAnimation() {
     return () => {
       fireworksInstance?.stop();
     };
-  }, []);
+  }, [toastText]);
 
   return (
     <div
