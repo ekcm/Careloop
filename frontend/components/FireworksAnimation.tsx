@@ -13,24 +13,17 @@ export default function FireworksAnimation() {
       const { Fireworks } = await import('fireworks-js');
       if (containerRef.current) {
         fireworksInstance = new Fireworks(containerRef.current, {
-          speed: 3,
           acceleration: 1.05,
           friction: 0.97,
           gravity: 1.5,
           particles: 50,
-          trace: 3,
+          traceLength: 3,
           explosion: 5,
-          boundaries: {
-            top: 50,
-            bottom: window.innerHeight,
-            left: 50,
-            right: window.innerWidth,
-          },
         });
         fireworksInstance.start();
 
         setTimeout(() => {
-          fireworksInstance.stop();
+          fireworksInstance?.stop();
         }, 5000);
       }
     }

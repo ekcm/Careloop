@@ -1,2 +1,7 @@
 dist/
 node_modules/
+.next/
+.env*
+package-lock.json
+yarn.lock
+*.min.js
