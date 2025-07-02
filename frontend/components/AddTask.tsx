@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 import {
   Dialog,
   DialogTrigger,
@@ -10,17 +10,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@/components/ui/radio-group";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { toast } from "sonner";
-import { taskIconMap, type Task } from "@/lib/typing";
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { toast } from 'sonner';
+import { taskIconMap, type Task } from '@/lib/typing';
 
 interface AddTaskProps {
   onAdd: (task: Task) => void;
@@ -29,9 +30,9 @@ interface AddTaskProps {
 export default function AddTask({ onAdd }: AddTaskProps) {
   const [open, setOpen] = useState(false);
   const [newTask, setNewTask] = useState({
-    label: "",
-    time: "",
-    icon: "pill",
+    label: '',
+    time: '',
+    icon: 'pill',
     date: new Date(),
   });
 
@@ -44,12 +45,12 @@ export default function AddTask({ onAdd }: AddTaskProps) {
       label: newTask.label,
       time: newTask.time,
       icon: newTask.icon,
-      date: format(newTask.date, "yyyy-MM-dd"),
+      date: format(newTask.date, 'yyyy-MM-dd'),
     };
 
     onAdd(task);
-    setNewTask({ label: "", time: "", icon: "pill", date: new Date() });
-    toast.success("Task added successfully", { id: "task-added-success" });
+    setNewTask({ label: '', time: '', icon: 'pill', date: new Date() });
+    toast.success('Task added successfully', { id: 'task-added-success' });
     setOpen(false);
   };
 
@@ -69,11 +70,17 @@ export default function AddTask({ onAdd }: AddTaskProps) {
             <p className="mb-1 text-sm font-medium">Icon</p>
             <RadioGroup
               value={newTask.icon}
-              onValueChange={(value) => setNewTask((t) => ({ ...t, icon: value }))}
+              onValueChange={(value) =>
+                setNewTask((t) => ({ ...t, icon: value }))
+              }
               className="grid grid-cols-5 gap-3"
             >
               {Object.entries(taskIconMap).map(([key]) => (
-                <RadioGroupItem key={key} value={key} className="peer sr-only" />
+                <RadioGroupItem
+                  key={key}
+                  value={key}
+                  className="peer sr-only"
+                />
               ))}
               {Object.entries(taskIconMap).map(([key, IconNode]) => (
                 <label
@@ -81,8 +88,8 @@ export default function AddTask({ onAdd }: AddTaskProps) {
                   htmlFor={key}
                   className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors cursor-pointer ${
                     newTask.icon === key
-                      ? "bg-primary/10 border-primary"
-                      : "bg-muted hover:bg-muted/60"
+                      ? 'bg-primary/10 border-primary'
+                      : 'bg-muted hover:bg-muted/60'
                   }`}
                   onClick={() => setNewTask((t) => ({ ...t, icon: key }))}
                 >
@@ -94,7 +101,9 @@ export default function AddTask({ onAdd }: AddTaskProps) {
           <Input
             placeholder="Label"
             value={newTask.label}
-            onChange={(e) => setNewTask((t) => ({ ...t, label: e.target.value }))}
+            onChange={(e) =>
+              setNewTask((t) => ({ ...t, label: e.target.value }))
+            }
           />
           <div>
             <p className="mb-1 text-sm font-medium">Date</p>
@@ -104,14 +113,16 @@ export default function AddTask({ onAdd }: AddTaskProps) {
                   variant="outline"
                   className="w-full justify-start text-left font-normal"
                 >
-                  {newTask.date ? format(newTask.date, "PPP") : "Pick a date"}
+                  {newTask.date ? format(newTask.date, 'PPP') : 'Pick a date'}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={newTask.date}
-                  onSelect={(date) => date && setNewTask((t) => ({ ...t, date }))}
+                  onSelect={(date) =>
+                    date && setNewTask((t) => ({ ...t, date }))
+                  }
                   initialFocus
                 />
               </PopoverContent>
@@ -122,18 +133,20 @@ export default function AddTask({ onAdd }: AddTaskProps) {
             <Input
               type="time"
               value={newTask.time}
-              onChange={(e) => setNewTask((t) => ({ ...t, time: e.target.value }))}
+              onChange={(e) =>
+                setNewTask((t) => ({ ...t, time: e.target.value }))
+              }
             />
           </div>
         </div>
         <DialogFooter>
-            <Button
+          <Button
             onClick={addTask}
             disabled={!newTask.label.trim() || !newTask.time}
             className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
+          >
             Save Task
-            </Button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

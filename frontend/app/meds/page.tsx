@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import React, { useState, useEffect, FC, FormEvent } from 'react';
 import {
   supabase,
@@ -14,18 +14,22 @@ const TodoTestComponent: FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTodoLabel, setNewTodoLabel] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [newTodoDateTime, setNewTodoDateTime] = useState<string>(new Date().toISOString().slice(0, 16));
+  const [newTodoDateTime, setNewTodoDateTime] = useState<string>(
+    new Date().toISOString().slice(0, 16)
+  );
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
   // Effect to get the current user's ID on component mount
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
       } else {
-        setError("No user is logged in. Please log in to test the functions.");
+        setError('No user is logged in. Please log in to test the functions.');
       }
     };
     fetchUser();
@@ -65,11 +69,11 @@ const TodoTestComponent: FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const newTodoData: NewTodo = { 
-          label: newTodoLabel, 
-          user_id: userId,
-          date_and_time: newTodoDateTime
-        };
+      const newTodoData: NewTodo = {
+        label: newTodoLabel,
+        user_id: userId,
+        date_and_time: newTodoDateTime,
+      };
       const addedTodo = await addTodo(newTodoData);
       setTodos([addedTodo, ...todos]); // Add new todo to the top of the list
       setNewTodoLabel(''); // Clear input field
@@ -114,14 +118,26 @@ const TodoTestComponent: FC = () => {
   return (
     <div className="p-8 font-sans bg-gray-50 min-h-screen">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4 text-center text-gray-800">Todo API Test</h1>
-        
-        {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}
-        
+        <h1 className="text-3xl font-bold mb-4 text-center text-gray-800">
+          Todo API Test
+        </h1>
+
+        {error && (
+          <div
+            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+            role="alert"
+          >
+            {error}
+          </div>
+        )}
+
         {userId ? (
           <>
             {/* Form to add a new todo */}
-            <form onSubmit={handleAddTodo} className="mb-6 p-4 bg-white rounded-lg shadow">
+            <form
+              onSubmit={handleAddTodo}
+              className="mb-6 p-4 bg-white rounded-lg shadow"
+            >
               <input
                 type="text"
                 value={newTodoLabel}
@@ -135,41 +151,63 @@ const TodoTestComponent: FC = () => {
                 onChange={(e) => setNewTodoDateTime(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <button type="submit" disabled={loading || !newTodoLabel.trim()} className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 disabled:bg-blue-300">
+              <button
+                type="submit"
+                disabled={loading || !newTodoLabel.trim()}
+                className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 disabled:bg-blue-300"
+              >
                 {loading ? 'Adding...' : 'Add Todo (POST)'}
               </button>
             </form>
 
             {/* Display list of todos */}
             <div className="space-y-3">
-              <h2 className="text-2xl font-semibold text-gray-700">Your Todos</h2>
+              <h2 className="text-2xl font-semibold text-gray-700">
+                Your Todos
+              </h2>
               {loading && <p>Loading...</p>}
-              {todos.length > 0 ? (
-                todos.map((todo) => (
-                  <div key={todo.id} className="flex items-center justify-between bg-white p-4 rounded-lg shadow">
-                    <div>
-                        <span className={`${todo.is_completed ? 'line-through text-gray-400' : ''}`}>
+              {todos.length > 0
+                ? todos.map((todo) => (
+                    <div
+                      key={todo.id}
+                      className="flex items-center justify-between bg-white p-4 rounded-lg shadow"
+                    >
+                      <div>
+                        <span
+                          className={`${todo.is_completed ? 'line-through text-gray-400' : ''}`}
+                        >
                           {todo.label}
                         </span>
-                        <p className="text-xs text-gray-500">{new Date(todo.date_and_time).toLocaleString('en-GB', { timeZone: 'UTC'})}</p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(todo.date_and_time).toLocaleString(
+                            'en-GB',
+                            { timeZone: 'UTC' }
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleToggleComplete(todo)}
+                          className={`px-3 py-1 text-sm rounded text-white ${todo.is_completed ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'}`}
+                        >
+                          {todo.is_completed ? 'Undo' : 'Complete'} (UPDATE)
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTodo(todo.id)}
+                          className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                        >
+                          Delete (DELETE)
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <button onClick={() => handleToggleComplete(todo)} className={`px-3 py-1 text-sm rounded text-white ${todo.is_completed ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'}`}>
-                        {todo.is_completed ? 'Undo' : 'Complete'} (UPDATE)
-                      </button>
-                      <button onClick={() => handleDeleteTodo(todo.id)} className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600">
-                        Delete (DELETE)
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                !loading && <p>No todos found. Add one above!</p>
-              )}
+                  ))
+                : !loading && <p>No todos found. Add one above!</p>}
             </div>
           </>
         ) : (
-          <p className="text-center text-gray-500">Please log in to manage your todos.</p>
+          <p className="text-center text-gray-500">
+            Please log in to manage your todos.
+          </p>
         )}
       </div>
     </div>

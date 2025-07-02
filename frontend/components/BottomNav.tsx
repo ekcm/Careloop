@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import clsx from "clsx";
-import { ListTodo, User } from "lucide-react";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import clsx from 'clsx';
+import { ListTodo, User } from 'lucide-react';
 
 const navItems = [
-  { href: "/",     icon: ListTodo, label: "Home" },
-  { href: "/account", icon: User,     label: "Account" },
+  { href: '/', icon: ListTodo, label: 'Home' },
+  { href: '/account', icon: User, label: 'Account' },
 ];
 
 export default function BottomNav() {
@@ -22,10 +22,12 @@ export default function BottomNav() {
             key={href}
             href={href}
             className={clsx(
-              "flex flex-col items-center transition-colors",
-              "px-3 py-1 rounded-md", 
-              !isActive && "text-gray-500 hover:text-black dark:text-zinc-400 dark:hover:text-white",
-              isActive && "text-blue-600 dark:text-blue-400 font-medium bg-blue-100/60 dark:bg-blue-900/40"
+              'flex flex-col items-center transition-colors',
+              'px-3 py-1 rounded-md',
+              !isActive &&
+                'text-gray-500 hover:text-black dark:text-zinc-400 dark:hover:text-white',
+              isActive &&
+                'text-blue-600 dark:text-blue-400 font-medium bg-blue-100/60 dark:bg-blue-900/40'
             )}
           >
             <Icon size={18} strokeWidth={1.6} />

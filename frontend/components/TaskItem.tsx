@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { CheckCircle2, Clock, CalendarDays, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import type { Task } from "@/lib/typing";
-import { taskIconMap } from "@/lib/typing";
-import { useState } from "react";
+import { CheckCircle2, Clock, CalendarDays, Trash2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import type { Task } from '@/lib/typing';
+import { taskIconMap } from '@/lib/typing';
+import { useState } from 'react';
 
 type TaskItemProps = Task & {
   onToggle?: (id: string) => void;
@@ -37,8 +37,8 @@ export default function TaskItem({
     <div
       onClick={() => onToggle?.(id)}
       className={cn(
-        "flex justify-between items-center p-3 rounded-xl shadow-sm cursor-pointer relative",
-        completed ? "bg-blue-50 dark:bg-zinc-800" : "bg-white dark:bg-zinc-900"
+        'flex justify-between items-center p-3 rounded-xl shadow-sm cursor-pointer relative',
+        completed ? 'bg-blue-50 dark:bg-zinc-800' : 'bg-white dark:bg-zinc-900'
       )}
     >
       <div className="flex items-center gap-3 min-w-0">
@@ -46,8 +46,8 @@ export default function TaskItem({
         <div className="min-w-0">
           <p
             className={cn(
-              "text-sm font-medium break-words",
-              completed && "line-through text-muted-foreground"
+              'text-sm font-medium break-words',
+              completed && 'line-through text-muted-foreground'
             )}
           >
             {label}
@@ -68,8 +68,8 @@ export default function TaskItem({
       <div className="flex items-center gap-2">
         <CheckCircle2
           className={cn(
-            "w-7 h-7 transition-colors",
-            completed ? "text-blue-500" : "text-gray-300"
+            'w-7 h-7 transition-colors',
+            completed ? 'text-blue-500' : 'text-gray-300'
           )}
         />
         <button
@@ -85,7 +85,9 @@ export default function TaskItem({
       {showConfirm && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
           <div className="bg-white dark:bg-zinc-900 p-4 rounded-lg shadow-lg flex flex-col items-center gap-3">
-            <p className="text-sm">Are you sure you want to delete this task?</p>
+            <p className="text-sm">
+              Are you sure you want to delete this task?
+            </p>
             <div className="flex gap-2">
               <button
                 onClick={(e) => {

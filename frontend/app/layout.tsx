@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import BottomNav from "@/components/BottomNav";
-import { Toaster } from "sonner"; 
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import BottomNav from '@/components/BottomNav';
+import { Toaster } from 'sonner';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Your App",
-  description: "Caregiving helper",
+  title: 'Your App',
+  description: 'Caregiving helper',
 };
 
 export default function RootLayout({

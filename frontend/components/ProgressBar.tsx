@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Task } from "@/lib/typing";
-import { Progress } from "@/components/ui/progress";
-import FireworksAnimation from "./FireworksAnimation";
+import { Task } from '@/lib/typing';
+import { Progress } from '@/components/ui/progress';
+import FireworksAnimation from './FireworksAnimation';
 
 export default function ProgressBar({ tasks }: { tasks: Task[] }) {
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split('T')[0];
 
   const todaysTasks = tasks.filter((t) => t.date === today);
   const completedCount = todaysTasks.filter((t) => t.completed).length;
@@ -23,8 +23,7 @@ export default function ProgressBar({ tasks }: { tasks: Task[] }) {
         </div>
         <div className="flex flex-col items-end">
           <span className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">
-            {Math.round(progress)}
-            %
+            {Math.round(progress)}%
           </span>
           <span className="text-sm font-semibold">Complete</span>
         </div>

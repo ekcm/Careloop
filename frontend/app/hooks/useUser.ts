@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { createClient, Session } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'SUPABASE_URL';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'SUPABASE_ANON_KEY';
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'SUPABASE_ANON_KEY';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface UserInfo {
@@ -43,9 +44,13 @@ export default function useUser() {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => fetchProfile(session));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) =>
-      fetchProfile(session),
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => fetchProfile(session));
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) =>
+      fetchProfile(session)
     );
     return () => subscription.unsubscribe();
   }, []);

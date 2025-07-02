@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
+import type { FireworksHandlers } from 'fireworks-js';
 
 export default function FireworksAnimation() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let fireworksInstance: any;
+    let fireworksInstance: FireworksHandlers | undefined;
 
     async function startFireworks() {
-      const { Fireworks } = await import("fireworks-js");
+      const { Fireworks } = await import('fireworks-js');
       if (containerRef.current) {
         fireworksInstance = new Fireworks(containerRef.current, {
           speed: 3,
@@ -45,7 +46,7 @@ export default function FireworksAnimation() {
     <div
       ref={containerRef}
       className="fixed inset-0 pointer-events-none z-50"
-      style={{ background: "transparent" }}
+      style={{ background: 'transparent' }}
     />
   );
 }

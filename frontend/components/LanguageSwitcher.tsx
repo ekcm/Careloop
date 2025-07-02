@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Globe, ChevronDown } from "lucide-react";
-import { useState } from "react";
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Globe, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 
 const LANGUAGES = [
-  { code: "en", label: "English", emoji: "🇬🇧" },
-  { code: "ta", label: "Tamil",   emoji: "🇮🇳" },
-  { code: "ms", label: "Malay",   emoji: "🇲🇾" },
-  { code: "tl", label: "Tagalog", emoji: "🇵🇭" },
+  { code: 'en', label: 'English', emoji: '🇬🇧' },
+  { code: 'ta', label: 'Tamil', emoji: '🇮🇳' },
+  { code: 'ms', label: 'Malay', emoji: '🇲🇾' },
+  { code: 'tl', label: 'Tagalog', emoji: '🇵🇭' },
 ] as const;
 
 export default function LanguageSwitcher() {

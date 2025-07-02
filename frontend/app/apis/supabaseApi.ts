@@ -1,13 +1,15 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 console.log('ENV:', process.env.NEXT_PUBLIC_SUPABASE_URL);
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Supabase URL and Anon Key are not set. Please check your .env file.");
+  throw new Error(
+    'Supabase URL and Anon Key are not set. Please check your .env file.'
+  );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface Todo {
   id: number;
@@ -20,13 +22,12 @@ export interface Todo {
 }
 
 export interface NewTodo {
-    label: string;
-    user_id: string;
-    date_and_time: string;
-    notes?: string | null;
-    reward?: string | null;
+  label: string;
+  user_id: string;
+  date_and_time: string;
+  notes?: string | null;
+  reward?: string | null;
 }
-
 
 /**
  * GET Function: Fetches all todos for a specific user.
@@ -46,7 +47,7 @@ export const getTodos = async (userId: string): Promise<Todo[]> => {
     console.error('Error fetching todos:', error);
     throw error;
   }
-  
+
   return data || [];
 };
 
@@ -66,7 +67,7 @@ export const addTodo = async (newTodo: NewTodo): Promise<Todo> => {
       date_and_time: new Date().toISOString(),
     })
     .select()
-    .single(); 
+    .single();
 
   if (error) {
     console.error('Error adding todo:', error);
@@ -83,19 +84,21 @@ export const addTodo = async (newTodo: NewTodo): Promise<Todo> => {
  * @returns A promise that resolves when the update is successful.
  * @throws Throws a PostgrestError if the update operation fails.
  */
-export const updateTodoCompletion = async (id: number, is_completed: boolean): Promise<void> => {
-    console.log(`Updating todo ${id} to completed status: ${is_completed}`);
-    const { error } = await supabase
-        .from('todos')
-        .update({ is_completed })
-        .eq('id', id);
+export const updateTodoCompletion = async (
+  id: number,
+  is_completed: boolean
+): Promise<void> => {
+  console.log(`Updating todo ${id} to completed status: ${is_completed}`);
+  const { error } = await supabase
+    .from('todos')
+    .update({ is_completed })
+    .eq('id', id);
 
-    if (error) {
-        console.error('Error updating todo:', error);
-        throw error;
-    }
+  if (error) {
+    console.error('Error updating todo:', error);
+    throw error;
+  }
 };
-
 
 /**
  * DELETE Function: Removes a todo from the database.
@@ -105,10 +108,7 @@ export const updateTodoCompletion = async (id: number, is_completed: boolean): P
  */
 export const deleteTodo = async (id: number): Promise<void> => {
   console.log(`Deleting todo with id: ${id}`);
-  const { error } = await supabase
-    .from('todos')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from('todos').delete().eq('id', id);
 
   if (error) {
     console.error('Error deleting todo:', error);
