@@ -8,6 +8,28 @@ const supabaseAnonKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'SUPABASE_ANON_KEY';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+/**
+ * A simple notification component to display messages.
+ */
+export const Notification: FC<{
+  message: string;
+  onClose: () => void;
+  isError?: boolean;
+}> = ({ message, onClose, isError }) => {
+  if (!message) return null;
+
+  return (
+    <div
+      className={`fixed top-5 right-5 p-4 rounded-md shadow-lg text-white ${isError ? 'bg-red-500' : 'bg-blue-500'}`}
+    >
+      <span>{message}</span>
+      <button onClick={onClose} className="ml-4 font-bold">
+        X
+      </button>
+    </div>
+  );
+};
+
 const AuthPage: FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [email, setEmail] = useState<string>('');
@@ -25,12 +47,16 @@ const AuthPage: FC = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
-    return () => subscription.unsubscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
   
   /**
@@ -129,6 +155,11 @@ const AuthPage: FC = () => {
   if (session) {
     return (
       <>
+        <Notification
+          message={notification?.message || ''}
+          isError={notification?.isError}
+          onClose={() => setNotification(null)}
+        />
         <UserPage session={session} handleLogout={handleLogout} loading={loading} />
       </>
     );
@@ -136,6 +167,11 @@ const AuthPage: FC = () => {
 
   return (
     <div className="w-full h-screen flex flex-col items-center justify-center p-4">
+      <Notification
+        message={notification?.message || ''}
+        isError={notification?.isError}
+        onClose={() => setNotification(null)}
+      />
       <div className="w-full max-w-md p-8 space-y-6">
         <header>
           <h1 className="text-3xl font-bold text-center text-gray-800">
@@ -214,7 +250,7 @@ const AuthPage: FC = () => {
         {/* Google Login Button */}
         <button
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center px-4 py-2 font-semibold text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          className="w-full flex items-center justify-center px-4 py-2 font-semibold text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 max-w-sm"
           disabled={loading}
         >
           <svg className="w-5 h-5 mr-3" viewBox="0 0 48 48">
