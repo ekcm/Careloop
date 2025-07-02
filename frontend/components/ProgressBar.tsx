@@ -3,6 +3,7 @@
 import { Task } from '@/lib/typing';
 import { Progress } from '@/components/ui/progress';
 import FireworksAnimation from './FireworksAnimation';
+import { Todo } from '@/apis/supabaseApi';
 
 const encouragementMessages = [
   'Thank you for your loving care for Grandma. You’re truly appreciated! 🌸',
@@ -17,11 +18,11 @@ const encouragementMessages = [
   'Thank you for being a true blessing in Grandma’s life. We appreciate you! 🌷',
 ];
 
-export default function ProgressBar({ tasks }: { tasks: Task[] }) {
+export default function ProgressBar({ tasks }: { tasks: Todo[] }) {
   const today = new Date().toISOString().split('T')[0];
 
-  const todaysTasks = tasks.filter((t) => t.date === today);
-  const completedCount = todaysTasks.filter((t) => t.completed).length;
+  const todaysTasks = tasks.filter((t) => t.date_and_time === today);
+  const completedCount = todaysTasks.filter((t) => t.is_completed).length;
   const progress = (completedCount / (todaysTasks.length || 1)) * 100;
 
   return (

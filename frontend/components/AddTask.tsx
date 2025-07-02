@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, StickyNote, Award } from 'lucide-react';
 import {
   Dialog,
   DialogTrigger,
@@ -12,7 +12,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Popover,
   PopoverTrigger,
@@ -21,36 +20,57 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { taskIconMap, type Task } from '@/lib/typing';
+import { NewTodo } from '@/apis/supabaseApi';
 
 interface AddTaskProps {
-  onAdd: (task: Task) => void;
+  onAdd: (task: Omit<NewTodo, 'user_id' | 'group_id'>) => void;
 }
 
 export default function AddTask({ onAdd }: AddTaskProps) {
   const [open, setOpen] = useState(false);
-  const [newTask, setNewTask] = useState({
-    label: '',
-    time: '',
-    icon: 'pill',
-    date: new Date(),
-  });
+  const [label, setLabel] = useState('');
+  const [notes, setNotes] = useState('');
+  const [reward, setReward] = useState('');
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [time, setTime] = useState('');
 
-  const addTask = () => {
-    if (!newTask.label.trim() || !newTask.time) return;
+  /**
+   * Resets all form fields to their default state.
+   */
+  const resetForm = () => {
+    setLabel('');
+    setNotes('');
+    setReward('');
+    setDate(new Date());
+    setTime('');
+  };
 
-    const task: Task = {
-      id: String(Date.now()),
-      completed: false,
-      label: newTask.label,
-      time: newTask.time,
-      icon: newTask.icon,
-      date: format(newTask.date, 'yyyy-MM-dd'),
+  /**
+   * Validates the form, constructs the new task object, and calls the onAdd prop.
+   */
+  const handleAddTask = () => {
+    // Basic validation
+    if (!label.trim() || !date || !time) {
+      toast.error('Please fill in the task label, date, and time.');
+      return;
+    }
+
+    // Combine date and time into a single ISO string for the database
+    const combinedDateTime = new Date(
+      `${format(date, 'yyyy-MM-dd')}T${time}`
+    ).toISOString();
+
+    // Construct the task object to be sent to the parent component
+    const taskToAdd: Omit<NewTodo, 'user_id' | 'group_id'> = {
+      label,
+      date_and_time: combinedDateTime,
+      notes: notes.trim() || null,
+      reward: reward.trim() || null,
     };
 
-    onAdd(task);
-    setNewTask({ label: '', time: '', icon: 'pill', date: new Date() });
-    toast.success('Task added successfully', { id: 'task-added-success' });
+    onAdd(taskToAdd);
+    toast.success('Task added successfully!');
+    resetForm();
     setOpen(false);
   };
 
@@ -65,46 +85,15 @@ export default function AddTask({ onAdd }: AddTaskProps) {
         <DialogHeader>
           <DialogTitle>Add New Task</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <p className="mb-1 text-sm font-medium">Icon</p>
-            <RadioGroup
-              value={newTask.icon}
-              onValueChange={(value) =>
-                setNewTask((t) => ({ ...t, icon: value }))
-              }
-              className="grid grid-cols-5 gap-3"
-            >
-              {Object.entries(taskIconMap).map(([key]) => (
-                <RadioGroupItem
-                  key={key}
-                  value={key}
-                  className="peer sr-only"
-                />
-              ))}
-              {Object.entries(taskIconMap).map(([key, IconNode]) => (
-                <label
-                  key={key}
-                  htmlFor={key}
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors cursor-pointer ${
-                    newTask.icon === key
-                      ? 'bg-primary/10 border-primary'
-                      : 'bg-muted hover:bg-muted/60'
-                  }`}
-                  onClick={() => setNewTask((t) => ({ ...t, icon: key }))}
-                >
-                  {IconNode}
-                </label>
-              ))}
-            </RadioGroup>
-          </div>
+        <div className="space-y-4 py-2">
+          {/* Task Label Input */}
           <Input
-            placeholder="Label"
-            value={newTask.label}
-            onChange={(e) =>
-              setNewTask((t) => ({ ...t, label: e.target.value }))
-            }
+            placeholder="Task Label (e.g., Finish report)"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
           />
+
+          {/* Date Picker */}
           <div>
             <p className="mb-1 text-sm font-medium">Date</p>
             <Popover>
@@ -113,36 +102,56 @@ export default function AddTask({ onAdd }: AddTaskProps) {
                   variant="outline"
                   className="w-full justify-start text-left font-normal"
                 >
-                  {newTask.date ? format(newTask.date, 'PPP') : 'Pick a date'}
+                  {date ? format(date, 'PPP') : 'Pick a date'}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
-                  selected={newTask.date}
-                  onSelect={(date) =>
-                    date && setNewTask((t) => ({ ...t, date }))
-                  }
+                  selected={date}
+                  onSelect={setDate}
                   initialFocus
                 />
               </PopoverContent>
             </Popover>
           </div>
+
+          {/* Time Input */}
           <div>
             <p className="mb-1 text-sm font-medium">Time</p>
             <Input
               type="time"
-              value={newTask.time}
-              onChange={(e) =>
-                setNewTask((t) => ({ ...t, time: e.target.value }))
-              }
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+            />
+          </div>
+
+          {/* Optional Notes Input */}
+          <div className="relative">
+             <StickyNote className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+            <textarea
+              placeholder="Notes (optional)"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="pl-10 w-full border rounded-md px-3 py-2 text-sm shadow-sm min-h-[80px]"
+            />
+          </div>
+
+          {/* Optional Reward Input */}
+           <div className="relative">
+             <Award className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Reward (optional)"
+              value={reward}
+              onChange={(e) => setReward(e.target.value)}
+              className="pl-10"
             />
           </div>
         </div>
         <DialogFooter>
           <Button
-            onClick={addTask}
-            disabled={!newTask.label.trim() || !newTask.time}
+            onClick={handleAddTask}
+            disabled={!label.trim() || !time || !date}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             Save Task

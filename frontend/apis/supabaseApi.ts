@@ -204,12 +204,18 @@ export const deleteGroup = async (groupId: string): Promise<void> => {
  * @returns A promise that resolves to an array of todos.
  * @throws Throws an error if the fetch operation fails.
  */
+/**
+ * Fetches all todos for a specific group.
+ * @param groupId The ID of the group whose todos are to be fetched.
+ * @returns A promise that resolves to an array of todos.
+ * @throws Throws an error if the fetch operation fails.
+ */
 export const getGroupTodos = async (groupId: string): Promise<Todo[]> => {
   const { data, error } = await supabase
     .from('todos')
     .select('*')
     .eq('group_id', groupId)
-    .order('created_at', { ascending: false });
+    .order('date_and_time', { ascending: false }); // <-- THE FIX IS HERE
 
   if (error) {
     console.error('Error fetching group todos:', error);

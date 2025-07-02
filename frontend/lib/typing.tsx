@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 export type Task = {
-  id: string;
+  id: number;
   label: string;
   date: string;
   time: string;
