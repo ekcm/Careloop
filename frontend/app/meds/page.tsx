@@ -8,7 +8,7 @@ import {
   deleteTodo,
   Todo,
   NewTodo,
-} from '../apis/supabaseApi';
+} from '../../apis/supabaseApi';
 
 const TodoTestComponent: FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
