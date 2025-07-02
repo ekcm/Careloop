@@ -237,7 +237,6 @@ export const addTodo = async (newTodo: NewTodo): Promise<Todo> => {
     .insert({
       ...newTodo,
       is_completed: false,
-      date_and_time: new Date().toISOString(), // Set current timestamp
     })
     .select()
     .single();

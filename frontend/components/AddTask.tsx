@@ -34,9 +34,6 @@ export default function AddTask({ onAdd }: AddTaskProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [time, setTime] = useState('');
 
-  /**
-   * Resets all form fields to their default state.
-   */
   const resetForm = () => {
     setLabel('');
     setNotes('');
@@ -45,9 +42,6 @@ export default function AddTask({ onAdd }: AddTaskProps) {
     setTime('');
   };
 
-  /**
-   * Validates the form, constructs the new task object, and calls the onAdd prop.
-   */
   const handleAddTask = () => {
     // Basic validation
     if (!label.trim() || !date || !time) {
@@ -55,13 +49,12 @@ export default function AddTask({ onAdd }: AddTaskProps) {
       return;
     }
 
-    // Combine date and time into a single ISO string for the database
-    const combinedDateTime = new Date(
-      `${format(date, 'yyyy-MM-dd')}T${time}`
-    ).toISOString();
+    // Create the ISO string by explicitly adding 'Z' to signify UTC.
+    // This prevents the browser from performing any timezone conversion.
+    // The date and time selected by the user are preserved as they are.
+    const combinedDateTime = `${format(date, 'yyyy-MM-dd')}T${time}:00Z`;
 
-    // Construct the task object to be sent to the parent component
-    const taskToAdd: Omit<NewTodo, 'user_id' | 'group_id'> = {
+    const taskToAdd: Omit<NewTodo, 'user_id' | 'group_id' | 'date_and_time'> & { date_and_time: string } = {
       label,
       date_and_time: combinedDateTime,
       notes: notes.trim() || null,
