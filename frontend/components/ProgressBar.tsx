@@ -5,16 +5,16 @@ import { Progress } from '@/components/ui/progress';
 import FireworksAnimation from './FireworksAnimation';
 
 const encouragementMessages = [
-  'Thank you for your loving care for Grandma. You’re truly appreciated! 🌸',
-  'Your kindness and dedication to Grandma make all the difference. Thank you! 🙏',
-  'Grandma is lucky to have you looking after her with such warmth and care. ❤️',
-  'Thank you for being such a wonderful helper to Grandma. Your efforts don’t go unnoticed! 🌟',
-  'Your hard work and compassion mean the world to Grandma and all of us. Thank you! 🌼',
-  'With your care, Grandma feels safe and loved every day. Thank you so much! 🤗',
-  'We’re grateful for your patience and dedication in caring for Grandma. Thank you! 💕',
-  'Thank you for your gentle and loving touch in looking after Grandma. You’re amazing! 🌹',
-  'Your support and care make Grandma’s days brighter. Thank you from the bottom of our hearts! 💖',
-  'Thank you for being a true blessing in Grandma’s life. We appreciate you! 🌷',
+  'Thank you, {{userName}}, for your loving care for Grandma. You’re truly appreciated! 🌸',
+  'Your kindness and dedication to Grandma make all the difference, {{userName}}. Thank you! 🙏',
+  'Grandma is lucky to have you, {{userName}}, looking after her with such warmth and care. ❤️',
+  'Thank you, {{userName}}, for being such a wonderful helper to Grandma. Your efforts don’t go unnoticed! 🌟',
+  'Your hard work and compassion mean the world to Grandma and all of us, {{userName}}. Thank you! 🌼',
+  'With your care, {{userName}}, Grandma feels safe and loved every day. Thank you so much! 🤗',
+  'We’re grateful for your patience and dedication in caring for Grandma, {{userName}}. Thank you! 💕',
+  'Thank you, {{userName}}, for your gentle and loving touch in looking after Grandma. You’re amazing! 🌹',
+  'Your support and care make Grandma’s days brighter, {{userName}}. Thank you from the bottom of our hearts! 💖',
+  'Thank you, {{userName}}, for being a true blessing in Grandma’s life. We appreciate you! 🌷',
 ];
 
 export default function ProgressBar({ tasks }: { tasks: Task[] }) {
@@ -28,11 +28,9 @@ export default function ProgressBar({ tasks }: { tasks: Task[] }) {
     <div className="rounded-xl bg-blue-50 dark:bg-blue-950 p-4 mb-6 relative">
       {progress === 100 && (
         <FireworksAnimation
-          toastText={
-            encouragementMessages[
-              Math.floor(Math.random() * encouragementMessages.length)
-            ]
-          }
+          toastText={encouragementMessages[
+            Math.floor(Math.random() * encouragementMessages.length)
+          ].replace('{{userName}}', 'NAME_PLACEHOLDER')}
         />
       )}
       <div className="flex justify-between items-center mb-2">
