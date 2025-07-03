@@ -66,7 +66,8 @@ class TranslationService {
     }
 
     // Add to batch if not already included
-    if (!this.pendingBatch.ids.includes(id)) {
+    // Double-check that pendingBatch is still valid
+    if (this.pendingBatch && !this.pendingBatch.ids.includes(id)) {
       this.pendingBatch.texts.push(item.originalText);
       this.pendingBatch.ids.push(id);
     }
@@ -78,9 +79,13 @@ class TranslationService {
     }
 
     // Process batch if full or set timeout
-    if (this.pendingBatch.texts.length >= this.config.MAX_BATCH_SIZE) {
+    if (
+      this.pendingBatch &&
+      this.config &&
+      this.pendingBatch.texts.length >= this.config.MAX_BATCH_SIZE
+    ) {
       this.processBatch();
-    } else {
+    } else if (this.pendingBatch) {
       this.scheduleBatchProcessing();
     }
   }
@@ -214,7 +219,15 @@ class TranslationService {
 
   // Generate consistent ID for text
   private generateId(text: string): string {
-    return `trans_${btoa(text.slice(0, 50)).replace(/[^a-zA-Z0-9]/g, '')}_${text.length}`;
+    // Create a simple hash that works in both browser and Node environments
+    const trimmedText = text.slice(0, 50);
+    let hash = 0;
+    for (let i = 0; i < trimmedText.length; i++) {
+      const char = trimmedText.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return `trans_${Math.abs(hash).toString(36)}_${text.length}`;
   }
 
   // Subscriber management for React components

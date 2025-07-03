@@ -19,6 +19,7 @@ import Header from '@/components/Header';
 import TaskItem from '@/components/TaskItem';
 import AddTask from '@/components/AddTask';
 import { Session } from '@supabase/supabase-js';
+import { useT } from '@/hooks/useTranslation';
 
 const getTodayString = () => new Date().toISOString().split('T')[0];
 
@@ -28,6 +29,26 @@ export default function HomePage() {
   const [group, setGroup] = useState<Group | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Translation hooks
+  const loadingText = useT('Loading tasks...');
+  const loginText = useT('Please log in to view your tasks.');
+  const welcomeText = useT('Welcome!');
+  const groupNeededText = useT(
+    'You need to be in a group to see and create tasks.'
+  );
+  const goToAccountText = useT(
+    'Please go to your account page to join or create a group.'
+  );
+  const goToAccountLinkText = useT('Go to Account');
+  const todaysTasksText = useT("Today's Tasks");
+  const futureTasksText = useT('Future Tasks');
+  const pastTasksText = useT('Past Tasks');
+  const failedLoadText = useT('Failed to load tasks. Please try again.');
+  const failedUpdateText = useT('Failed to update task.');
+  const failedAddText = useT('Failed to add task.');
+  const failedDeleteText = useT('Failed to delete task.');
+  const groupRequiredText = useT('You must be in a group to add a task.');
 
   const today = getTodayString();
 
@@ -80,11 +101,11 @@ export default function HomePage() {
         setGroup(null);
       }
     } catch {
-      setError('Failed to load tasks. Please try again.');
+      setError(failedLoadText);
     } finally {
       setLoading(false);
     }
-  }, [session]);
+  }, [session, failedLoadText]);
 
   useEffect(() => {
     fetchData();
@@ -107,7 +128,7 @@ export default function HomePage() {
           t.id === id ? { ...t, is_completed: currentStatus } : t
         )
       );
-      setError('Failed to update task.');
+      setError(failedUpdateText);
     }
   };
 
@@ -118,7 +139,7 @@ export default function HomePage() {
     taskData: Omit<NewTodo, 'user_id' | 'group_id'>
   ) => {
     if (!session || !group) {
-      setError('You must be in a group to add a task.');
+      setError(groupRequiredText);
       return;
     }
 
@@ -132,7 +153,7 @@ export default function HomePage() {
       const addedTask = await addTodo(newTodoData);
       setTasks((prev) => [addedTask, ...prev]);
     } catch {
-      setError('Failed to add task.');
+      setError(failedAddText);
     }
   };
 
@@ -148,7 +169,7 @@ export default function HomePage() {
     } catch {
       // Revert UI on error
       setTasks(originalTasks);
-      setError('Failed to delete task.');
+      setError(failedDeleteText);
     }
   };
 
@@ -202,29 +223,25 @@ export default function HomePage() {
   );
 
   if (loading) {
-    return <div className="p-4">Loading tasks...</div>;
+    return <div className="p-4">{loadingText}</div>;
   }
 
   if (!session) {
-    return <div className="p-4">Please log in to view your tasks.</div>;
+    return <div className="p-4">{loginText}</div>;
   }
 
   if (!group) {
     return (
       <div className="p-4 text-center">
         <Header />
-        <h2 className="mt-10 text-xl font-semibold">Welcome!</h2>
-        <p className="text-gray-600 mt-2">
-          You need to be in a group to see and create tasks.
-        </p>
-        <p className="text-gray-600 mt-1">
-          Please go to your account page to join or create a group.
-        </p>
+        <h2 className="mt-10 text-xl font-semibold">{welcomeText}</h2>
+        <p className="text-gray-600 mt-2">{groupNeededText}</p>
+        <p className="text-gray-600 mt-1">{goToAccountText}</p>
         <a
           href="/account"
           className="text-blue-500 hover:underline mt-4 inline-block"
         >
-          Go to Account
+          {goToAccountLinkText}
         </a>
       </div>
     );
@@ -235,15 +252,16 @@ export default function HomePage() {
       <Header />
       <ProgressBar tasks={todaysTasks} />
       <div className="flex justify-between items-center">
-        <h3 className="font-semibold">Today&apos;s Tasks</h3>
+        <h3 className="font-semibold">{todaysTasksText}</h3>
         <AddTask onAdd={handleAddTask} />
       </div>
 
       {error && <p className="text-red-500 my-2">{error}</p>}
 
       {todaysTasks.length > 0 && renderTaskSection('', todaysTasks)}
-      {futureTasks.length > 0 && renderTaskSection('Future Tasks', futureTasks)}
-      {pastTasks.length > 0 && renderTaskSection('Past Tasks', pastTasks)}
+      {futureTasks.length > 0 &&
+        renderTaskSection(futureTasksText, futureTasks)}
+      {pastTasks.length > 0 && renderTaskSection(pastTasksText, pastTasks)}
     </div>
   );
 }

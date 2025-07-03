@@ -3,6 +3,7 @@
 import { Progress } from '@/components/ui/progress';
 import FireworksAnimation from './FireworksAnimation';
 import { Todo } from '@/apis/supabaseApi';
+import { useT } from '@/hooks/useTranslation';
 
 const encouragementMessages = [
   'Thank you for your loving care for Grandma. You’re truly appreciated! 🌸',
@@ -29,6 +30,11 @@ export default function ProgressBar({ tasks }: { tasks: Todo[] }) {
   const progress =
     todaysTasks.length > 0 ? (completedCount / todaysTasks.length) * 100 : 0;
 
+  // Translation hooks
+  const todaysProgressText = useT("Today's Progress");
+  const tasksCompletedText = useT('of tasks completed');
+  const completeText = useT('Complete');
+
   return (
     <div className="rounded-xl bg-blue-50 dark:bg-blue-950 p-4 mb-6 relative overflow-hidden">
       {progress === 100 && todaysTasks.length > 0 && (
@@ -40,9 +46,9 @@ export default function ProgressBar({ tasks }: { tasks: Todo[] }) {
       )}
       <div className="flex justify-between items-center mb-2">
         <div>
-          <p className="text-lg font-semibold">Today&apos;s Progress</p>
+          <p className="text-lg font-semibold">{todaysProgressText}</p>
           <span className="text-sm text-gray-600 dark:text-gray-400">
-            {completedCount} of {todaysTasks.length} tasks completed
+            {completedCount} {tasksCompletedText} {todaysTasks.length}
           </span>
         </div>
         <div className="flex flex-col items-end">
@@ -50,7 +56,7 @@ export default function ProgressBar({ tasks }: { tasks: Todo[] }) {
             {Math.round(progress)}%
           </span>
           <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-            Complete
+            {completeText}
           </span>
         </div>
       </div>

@@ -21,6 +21,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { NewTodo } from '@/apis/supabaseApi';
+import { useT } from '@/hooks/useTranslation';
 
 interface AddTaskProps {
   onAdd: (task: Omit<NewTodo, 'user_id' | 'group_id'>) => void;
@@ -34,6 +35,21 @@ export default function AddTask({ onAdd }: AddTaskProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [time, setTime] = useState('');
 
+  // Translation hooks
+  const addTaskText = useT('Add Task');
+  const addNewTaskText = useT('Add New Task');
+  const dateText = useT('Date');
+  const timeText = useT('Time');
+  const pickDateText = useT('Pick a date');
+  const taskLabelText = useT('Task Label (e.g., Finish report)');
+  const notesText = useT('Notes (optional)');
+  const rewardText = useT('Reward (optional)');
+  const saveTaskText = useT('Save Task');
+  const validationErrorText = useT(
+    'Please fill in the task label, date, and time.'
+  );
+  const taskAddedText = useT('Task added successfully!');
+
   const resetForm = () => {
     setLabel('');
     setNotes('');
@@ -45,7 +61,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
   const handleAddTask = () => {
     // Basic validation
     if (!label.trim() || !date || !time) {
-      toast.error('Please fill in the task label, date, and time.');
+      toast.error(validationErrorText);
       return;
     }
 
@@ -64,7 +80,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
     };
 
     onAdd(taskToAdd);
-    toast.success('Task added successfully!');
+    toast.success(taskAddedText);
     resetForm();
     setOpen(false);
   };
@@ -73,31 +89,31 @@ export default function AddTask({ onAdd }: AddTaskProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="rounded-full">
-          <Plus className="w-4 h-4 mr-1" /> Add Task
+          <Plus className="w-4 h-4 mr-1" /> {addTaskText}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add New Task</DialogTitle>
+          <DialogTitle>{addNewTaskText}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           {/* Task Label Input */}
           <Input
-            placeholder="Task Label (e.g., Finish report)"
+            placeholder={taskLabelText}
             value={label}
             onChange={(e) => setLabel(e.target.value)}
           />
 
           {/* Date Picker */}
           <div>
-            <p className="mb-1 text-sm font-medium">Date</p>
+            <p className="mb-1 text-sm font-medium">{dateText}</p>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   className="w-full justify-start text-left font-normal"
                 >
-                  {date ? format(date, 'PPP') : 'Pick a date'}
+                  {date ? format(date, 'PPP') : pickDateText}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -113,7 +129,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
 
           {/* Time Input */}
           <div>
-            <p className="mb-1 text-sm font-medium">Time</p>
+            <p className="mb-1 text-sm font-medium">{timeText}</p>
             <Input
               type="time"
               value={time}
@@ -125,7 +141,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
           <div className="relative">
             <StickyNote className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
             <textarea
-              placeholder="Notes (optional)"
+              placeholder={notesText}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="pl-10 w-full border rounded-md px-3 py-2 text-sm shadow-sm min-h-[80px]"
@@ -136,7 +152,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
           <div className="relative">
             <Award className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Reward (optional)"
+              placeholder={rewardText}
               value={reward}
               onChange={(e) => setReward(e.target.value)}
               className="pl-10"
@@ -149,7 +165,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
             disabled={!label.trim() || !time || !date}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
-            Save Task
+            {saveTaskText}
           </Button>
         </DialogFooter>
       </DialogContent>
