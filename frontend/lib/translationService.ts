@@ -11,11 +11,22 @@ interface TranslationBatch {
   targetLanguage: string;
 }
 
+interface TranslationConfig {
+  USE_REAL_TRANSLATION: boolean;
+  BATCH_DELAY_MS: number;
+  MAX_BATCH_SIZE: number;
+  MODEL: string;
+  MAX_RETRIES: number;
+  TIMEOUT_MS: number;
+  DEFAULT_LANGUAGE: string;
+  ENABLE_LOGGING: boolean;
+}
+
 class TranslationService {
   private translations = new Map<string, TranslationItem>();
   private pendingBatch: TranslationBatch | null = null;
   private batchTimeout: NodeJS.Timeout | null = null;
-  private config: any = null; // Will be loaded dynamically
+  private config: TranslationConfig | null = null; // Will be loaded dynamically
 
   // Register text for translation and return a unique ID
   registerText(originalText: string): string {

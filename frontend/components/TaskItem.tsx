@@ -15,7 +15,6 @@ type TaskItemProps = {
 };
 
 export default function TaskItem({
-  id,
   label,
   time,
   date,
@@ -41,7 +40,9 @@ export default function TaskItem({
         onClick={onToggle}
         className={cn(
           'flex justify-between items-center p-3 rounded-xl shadow-sm cursor-pointer relative',
-          completed ? 'bg-blue-50 dark:bg-zinc-800' : 'bg-white dark:bg-zinc-900'
+          completed
+            ? 'bg-blue-50 dark:bg-zinc-800'
+            : 'bg-white dark:bg-zinc-900'
         )}
       >
         <div className="flex items-center gap-3 min-w-0">

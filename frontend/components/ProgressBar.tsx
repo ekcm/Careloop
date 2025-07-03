@@ -23,13 +23,11 @@ export default function ProgressBar({ tasks }: { tasks: Todo[] }) {
   const todaysTasks = tasks.filter(
     (t) => t.date_and_time.split('T')[0] === today
   );
-  
+
   const completedCount = todaysTasks.filter((t) => t.is_completed).length;
-  
+
   const progress =
-    todaysTasks.length > 0
-      ? (completedCount / todaysTasks.length) * 100
-      : 0;
+    todaysTasks.length > 0 ? (completedCount / todaysTasks.length) * 100 : 0;
 
   return (
     <div className="rounded-xl bg-blue-50 dark:bg-blue-950 p-4 mb-6 relative overflow-hidden">
@@ -51,7 +49,9 @@ export default function ProgressBar({ tasks }: { tasks: Todo[] }) {
           <span className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">
             {Math.round(progress)}%
           </span>
-          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Complete</span>
+          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Complete
+          </span>
         </div>
       </div>
       <Progress

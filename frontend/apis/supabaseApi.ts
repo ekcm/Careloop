@@ -57,16 +57,18 @@ export interface GroupMember {
  * @returns A promise that resolves to the user's profile, or null if not found.
  * @throws Throws an error if the fetch operation fails.
  */
-export const getUserProfile = async (userId: string): Promise<Profile | null> => {
+export const getUserProfile = async (
+  userId: string
+): Promise<Profile | null> => {
   const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
 
   if (error) {
-      console.error('Error fetching user profile:', error);
-      throw error;
+    console.error('Error fetching user profile:', error);
+    throw error;
   }
   return data;
 };
@@ -77,16 +79,18 @@ export const getUserProfile = async (userId: string): Promise<Profile | null> =>
  * @returns A promise that resolves to the group's data.
  * @throws Throws an error if the fetch operation fails.
  */
-export const getGroupDetails = async (groupId: string): Promise<Group | null> => {
+export const getGroupDetails = async (
+  groupId: string
+): Promise<Group | null> => {
   const { data, error } = await supabase
-      .from('groups')
-      .select('*')
-      .eq('id', groupId)
-      .single();
-  
+    .from('groups')
+    .select('*')
+    .eq('id', groupId)
+    .single();
+
   if (error) {
-      console.error('Error fetching group details:', error);
-      throw error;
+    console.error('Error fetching group details:', error);
+    throw error;
   }
   return data;
 };
@@ -97,13 +101,16 @@ export const getGroupDetails = async (groupId: string): Promise<Group | null> =>
  * @returns A promise that resolves to an array of group members.
  * @throws Throws an error if the fetch operation fails.
  */
-export const getGroupMembers = async (groupId: string): Promise<GroupMember[]> => {
-  const { data, error } = await supabase
-      .rpc('get_members_of_group', { p_group_id: groupId });
+export const getGroupMembers = async (
+  groupId: string
+): Promise<GroupMember[]> => {
+  const { data, error } = await supabase.rpc('get_members_of_group', {
+    p_group_id: groupId,
+  });
 
   if (error) {
-      console.error('Error fetching group members via RPC:', error);
-      throw error;
+    console.error('Error fetching group members via RPC:', error);
+    throw error;
   }
   return data || [];
 };
@@ -115,16 +122,19 @@ export const getGroupMembers = async (groupId: string): Promise<GroupMember[]> =
  * @returns A promise that resolves to the newly created group object.
  * @throws Throws an error if the operation fails.
  */
-export const createGroup = async (groupName: string, adminId: string): Promise<Group> => {
+export const createGroup = async (
+  groupName: string,
+  adminId: string
+): Promise<Group> => {
   const { data, error } = await supabase
-      .from('groups')
-      .insert({ name: groupName, admin_id: adminId })
-      .select()
-      .single();
+    .from('groups')
+    .insert({ name: groupName, admin_id: adminId })
+    .select()
+    .single();
 
   if (error) {
-      console.error('Error creating group:', error);
-      throw error;
+    console.error('Error creating group:', error);
+    throw error;
   }
   return data;
 };
@@ -134,7 +144,10 @@ export const createGroup = async (groupName: string, adminId: string): Promise<G
  * @param userId The ID of the user to add to the group.
  * @param groupName The unique name of the group to join.
  */
-export const joinGroupByName = async (userId: string, groupName: string): Promise<void> => {
+export const joinGroupByName = async (
+  userId: string,
+  groupName: string
+): Promise<void> => {
   const { data: group, error: findError } = await supabase
     .from('groups')
     .select('id')
@@ -165,15 +178,17 @@ export const joinGroupByName = async (userId: string, groupName: string): Promis
  * @returns A promise that resolves when the user has been removed.
  * @throws Throws an error if the update operation fails.
  */
-export const leaveOrBeKickedFromGroup = async (userId: string): Promise<void> => {
+export const leaveOrBeKickedFromGroup = async (
+  userId: string
+): Promise<void> => {
   const { error } = await supabase
-      .from('profiles')
-      .update({ group_id: null })
-      .eq('id', userId);
+    .from('profiles')
+    .update({ group_id: null })
+    .eq('id', userId);
 
   if (error) {
-      console.error(`Error removing user ${userId} from group:`, error);
-      throw error;
+    console.error(`Error removing user ${userId} from group:`, error);
+    throw error;
   }
 };
 
@@ -185,14 +200,11 @@ export const leaveOrBeKickedFromGroup = async (userId: string): Promise<void> =>
  * @throws Throws an error if the delete operation fails.
  */
 export const deleteGroup = async (groupId: string): Promise<void> => {
-  const { error } = await supabase
-      .from('groups')
-      .delete()
-      .eq('id', groupId);
+  const { error } = await supabase.from('groups').delete().eq('id', groupId);
 
   if (error) {
-      console.error('Error deleting group:', error);
-      throw error;
+    console.error('Error deleting group:', error);
+    throw error;
   }
 };
 

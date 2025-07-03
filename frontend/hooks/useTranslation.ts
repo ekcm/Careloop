@@ -30,7 +30,9 @@ export function useTranslation(text: string): UseTranslationResult {
       console.log(`Hook received translation update for text: "${text}"`);
       setUpdateCounter((prev) => prev + 1);
     });
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+    };
   }, [text]);
 
   // Queue for translation when language changes
@@ -78,7 +80,9 @@ export function useTranslations(texts: string[]): UseTranslationResult[] {
     const unsubscribe = translationService.subscribe(() => {
       setUpdateCounter((prev) => prev + 1);
     });
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   // Queue all texts for translation when language changes

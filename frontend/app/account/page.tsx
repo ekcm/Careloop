@@ -2,36 +2,14 @@
 import React, { useState, FC, ChangeEvent, MouseEvent, useEffect } from 'react';
 import { createClient, Session } from '@supabase/supabase-js';
 import { UserPage } from '@/components/account-page/UserPage';
-import { Button } from '@/components/ui/button';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useT } from '@/hooks/useTranslation';
+import { Notification } from '@/components/Notification';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'SUPABASE_URL';
 const supabaseAnonKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'SUPABASE_ANON_KEY';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-/**
- * A simple notification component to display messages.
- */
-export const Notification: FC<{
-  message: string;
-  onClose: () => void;
-  isError?: boolean;
-}> = ({ message, onClose, isError }) => {
-  if (!message) return null;
-
-  return (
-    <div
-      className={`fixed top-5 right-5 p-4 rounded-md shadow-lg text-white ${isError ? 'bg-red-500' : 'bg-blue-500'}`}
-    >
-      <span>{message}</span>
-      <button onClick={onClose} className="ml-4 font-bold">
-        X
-      </button>
-    </div>
-  );
-};
 
 const AuthPage: FC = () => {
   const [loading, setLoading] = useState<boolean>(false);

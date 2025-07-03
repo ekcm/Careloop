@@ -10,9 +10,9 @@
 export const TRANSLATION_CONFIG = {
   // Toggle between mock and real OpenAI translations
   USE_REAL_TRANSLATION: true, // Set to true to use OpenAI API, note that this will cost you money
-//   * FOR DEVELOPMENT (Mock translations):
-//   * - Keep USE_REAL_TRANSLATION: false
-//   * - Translations will show as [ZH] Welcome, [TA] Welcome, etc.
+  //   * FOR DEVELOPMENT (Mock translations):
+  //   * - Keep USE_REAL_TRANSLATION: false
+  //   * - Translations will show as [ZH] Welcome, [TA] Welcome, etc.
 
   // Batch processing settings
   BATCH_DELAY_MS: 500, // Wait time before processing batch

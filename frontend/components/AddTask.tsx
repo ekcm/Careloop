@@ -54,7 +54,9 @@ export default function AddTask({ onAdd }: AddTaskProps) {
     // The date and time selected by the user are preserved as they are.
     const combinedDateTime = `${format(date, 'yyyy-MM-dd')}T${time}:00Z`;
 
-    const taskToAdd: Omit<NewTodo, 'user_id' | 'group_id' | 'date_and_time'> & { date_and_time: string } = {
+    const taskToAdd: Omit<NewTodo, 'user_id' | 'group_id' | 'date_and_time'> & {
+      date_and_time: string;
+    } = {
       label,
       date_and_time: combinedDateTime,
       notes: notes.trim() || null,
@@ -121,7 +123,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
 
           {/* Optional Notes Input */}
           <div className="relative">
-             <StickyNote className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+            <StickyNote className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
             <textarea
               placeholder="Notes (optional)"
               value={notes}
@@ -131,8 +133,8 @@ export default function AddTask({ onAdd }: AddTaskProps) {
           </div>
 
           {/* Optional Reward Input */}
-           <div className="relative">
-             <Award className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <div className="relative">
+            <Award className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Reward (optional)"
               value={reward}

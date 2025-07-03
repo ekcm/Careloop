@@ -70,18 +70,17 @@ export default function HomePage() {
         setGroup(groupDetails);
 
         if (groupDetails) {
-            // 3. Fetch the group's todos
-            const groupTasks = await getGroupTodos(groupDetails.id);
-            setTasks(groupTasks);
+          // 3. Fetch the group's todos
+          const groupTasks = await getGroupTodos(groupDetails.id);
+          setTasks(groupTasks);
         }
       } else {
         // User is not in a group, clear tasks and group
         setTasks([]);
         setGroup(null);
       }
-    } catch (err) {
+    } catch {
       setError('Failed to load tasks. Please try again.');
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -96,13 +95,17 @@ export default function HomePage() {
    */
   const toggleTask = async (id: number, currentStatus: boolean) => {
     setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, is_completed: !currentStatus } : t))
+      prev.map((t) =>
+        t.id === id ? { ...t, is_completed: !currentStatus } : t
+      )
     );
     try {
       await updateTodoCompletion(id, !currentStatus);
-    } catch (err) {
+    } catch {
       setTasks((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, is_completed: currentStatus } : t))
+        prev.map((t) =>
+          t.id === id ? { ...t, is_completed: currentStatus } : t
+        )
       );
       setError('Failed to update task.');
     }
@@ -111,22 +114,24 @@ export default function HomePage() {
   /**
    * Adds a new task to the database and updates the UI.
    */
-  const handleAddTask = async (taskData: Omit<NewTodo, 'user_id' | 'group_id'>) => {
+  const handleAddTask = async (
+    taskData: Omit<NewTodo, 'user_id' | 'group_id'>
+  ) => {
     if (!session || !group) {
-        setError("You must be in a group to add a task.");
-        return;
+      setError('You must be in a group to add a task.');
+      return;
     }
-    
+
     const newTodoData: NewTodo = {
-        ...taskData,
-        user_id: session.user.id,
-        group_id: group.id,
+      ...taskData,
+      user_id: session.user.id,
+      group_id: group.id,
     };
 
     try {
       const addedTask = await addTodo(newTodoData);
       setTasks((prev) => [addedTask, ...prev]);
-    } catch (err) {
+    } catch {
       setError('Failed to add task.');
     }
   };
@@ -140,7 +145,7 @@ export default function HomePage() {
     setTasks((prev) => prev.filter((task) => task.id !== id));
     try {
       await deleteTodo(id);
-    } catch (err) {
+    } catch {
       // Revert UI on error
       setTasks(originalTasks);
       setError('Failed to delete task.');
@@ -156,9 +161,15 @@ export default function HomePage() {
     });
 
   // Split tasks by date
-  const pastTasks = sortTasks(tasks.filter((task) => task.date_and_time.split('T')[0] < today));
-  const todaysTasks = sortTasks(tasks.filter((task) => task.date_and_time.split('T')[0] === today));
-  const futureTasks = sortTasks(tasks.filter((task) => task.date_and_time.split('T')[0] > today));
+  const pastTasks = sortTasks(
+    tasks.filter((task) => task.date_and_time.split('T')[0] < today)
+  );
+  const todaysTasks = sortTasks(
+    tasks.filter((task) => task.date_and_time.split('T')[0] === today)
+  );
+  const futureTasks = sortTasks(
+    tasks.filter((task) => task.date_and_time.split('T')[0] > today)
+  );
 
   const renderTaskSection = (title: string, tasksList: Todo[]) => (
     <>
@@ -195,18 +206,27 @@ export default function HomePage() {
   }
 
   if (!session) {
-    return <div className="p-4">Please log in to view your tasks.</div>
+    return <div className="p-4">Please log in to view your tasks.</div>;
   }
 
   if (!group) {
     return (
-        <div className="p-4 text-center">
-            <Header />
-            <h2 className="mt-10 text-xl font-semibold">Welcome!</h2>
-            <p className="text-gray-600 mt-2">You need to be in a group to see and create tasks.</p>
-            <p className="text-gray-600 mt-1">Please go to your account page to join or create a group.</p>
-            <a href="/account" className="text-blue-500 hover:underline mt-4 inline-block">Go to Account</a>
-        </div>
+      <div className="p-4 text-center">
+        <Header />
+        <h2 className="mt-10 text-xl font-semibold">Welcome!</h2>
+        <p className="text-gray-600 mt-2">
+          You need to be in a group to see and create tasks.
+        </p>
+        <p className="text-gray-600 mt-1">
+          Please go to your account page to join or create a group.
+        </p>
+        <a
+          href="/account"
+          className="text-blue-500 hover:underline mt-4 inline-block"
+        >
+          Go to Account
+        </a>
+      </div>
     );
   }
 
