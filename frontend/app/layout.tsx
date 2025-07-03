@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import BottomNav from '@/components/BottomNav';
 import { Toaster } from 'sonner';
+import { LanguageProvider } from '@/lib/LanguageContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,9 +20,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className={`${inter.className} min-h-full pb-16 md:pb-0`}>
-        {children}
-        <BottomNav />
-        <Toaster richColors position="top-right" />
+        <LanguageProvider>
+          {children}
+          <BottomNav />
+          <Toaster richColors position="top-right" />
+        </LanguageProvider>
       </body>
     </html>
   );
