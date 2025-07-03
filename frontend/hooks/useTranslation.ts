@@ -17,7 +17,7 @@ interface UseTranslationResult {
  */
 export function useTranslation(text: string): UseTranslationResult {
   const { currentLanguage } = useLanguage();
-  const [, forceUpdate] = useState({});
+  const [updateCounter, setUpdateCounter] = useState(0);
 
   // Generate stable ID for this text
   const textId = useMemo(() => {
@@ -27,10 +27,11 @@ export function useTranslation(text: string): UseTranslationResult {
   // Force re-render when translations update
   useEffect(() => {
     const unsubscribe = translationService.subscribe(() => {
-      forceUpdate({});
+      console.log(`Hook received translation update for text: "${text}"`);
+      setUpdateCounter((prev) => prev + 1);
     });
     return unsubscribe;
-  }, []);
+  }, [text]);
 
   // Queue for translation when language changes
   useEffect(() => {
@@ -43,7 +44,7 @@ export function useTranslation(text: string): UseTranslationResult {
   // Get current translation state
   const translationItem = translationService.getTranslation(textId);
 
-  return {
+  const result = {
     translatedText:
       currentLanguage.code === 'en'
         ? text
@@ -51,6 +52,11 @@ export function useTranslation(text: string): UseTranslationResult {
     isTranslating: translationItem?.isTranslating || false,
     originalText: text,
   };
+
+  // Debug logging
+  console.log(`Hook returning for "${text}":`, result.translatedText);
+
+  return result;
 }
 
 /**
@@ -60,7 +66,7 @@ export function useTranslation(text: string): UseTranslationResult {
  */
 export function useTranslations(texts: string[]): UseTranslationResult[] {
   const { currentLanguage } = useLanguage();
-  const [, forceUpdate] = useState({});
+  const [updateCounter, setUpdateCounter] = useState(0);
 
   // Generate stable IDs for all texts
   const textIds = useMemo(() => {
@@ -70,7 +76,7 @@ export function useTranslations(texts: string[]): UseTranslationResult[] {
   // Force re-render when translations update
   useEffect(() => {
     const unsubscribe = translationService.subscribe(() => {
-      forceUpdate({});
+      setUpdateCounter((prev) => prev + 1);
     });
     return unsubscribe;
   }, []);

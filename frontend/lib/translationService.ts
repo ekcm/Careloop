@@ -15,8 +15,7 @@ class TranslationService {
   private translations = new Map<string, TranslationItem>();
   private pendingBatch: TranslationBatch | null = null;
   private batchTimeout: NodeJS.Timeout | null = null;
-  private readonly BATCH_DELAY = 500; // ms - wait for more texts before sending
-  private readonly MAX_BATCH_SIZE = 10; // max texts per batch
+  private config: any = null; // Will be loaded dynamically
 
   // Register text for translation and return a unique ID
   registerText(originalText: string): string {
@@ -35,7 +34,7 @@ class TranslationService {
   }
 
   // Add text to pending batch for translation
-  queueForTranslation(id: string, targetLanguage: string) {
+  async queueForTranslation(id: string, targetLanguage: string) {
     const item = this.translations.get(id);
     if (!item) return;
 
@@ -61,8 +60,14 @@ class TranslationService {
       this.pendingBatch.ids.push(id);
     }
 
+    // Load config if not already loaded
+    if (!this.config) {
+      const { TRANSLATION_CONFIG } = await import('./translationConfig');
+      this.config = TRANSLATION_CONFIG;
+    }
+
     // Process batch if full or set timeout
-    if (this.pendingBatch.texts.length >= this.MAX_BATCH_SIZE) {
+    if (this.pendingBatch.texts.length >= this.config.MAX_BATCH_SIZE) {
       this.processBatch();
     } else {
       this.scheduleBatchProcessing();
@@ -80,14 +85,20 @@ class TranslationService {
   }
 
   // Schedule batch processing with debounce
-  private scheduleBatchProcessing() {
+  private async scheduleBatchProcessing() {
     if (this.batchTimeout) {
       clearTimeout(this.batchTimeout);
     }
 
+    // Load config if not already loaded
+    if (!this.config) {
+      const { TRANSLATION_CONFIG } = await import('./translationConfig');
+      this.config = TRANSLATION_CONFIG;
+    }
+
     this.batchTimeout = setTimeout(() => {
       this.processBatch();
-    }, this.BATCH_DELAY);
+    }, this.config.BATCH_DELAY_MS);
   }
 
   // Process the current batch
@@ -103,7 +114,12 @@ class TranslationService {
     }
 
     try {
-      // This will be implemented in Step 3
+      // Load config if not already loaded
+      if (!this.config) {
+        const { TRANSLATION_CONFIG } = await import('./translationConfig');
+        this.config = TRANSLATION_CONFIG;
+      }
+
       const translations = await this.translateBatch(
         batch.texts,
         batch.targetLanguage
@@ -120,6 +136,18 @@ class TranslationService {
       });
 
       // Notify subscribers about updates
+      if (this.config.ENABLE_LOGGING) {
+        console.log(
+          `Updated translations:`,
+          batch.ids.map((id) => {
+            const item = this.translations.get(id);
+            return `${item?.originalText} -> ${item?.translatedText}`;
+          })
+        );
+        console.log(
+          `Notifying ${this.subscribers.size} subscribers of translation updates`
+        );
+      }
       this.notifySubscribers();
     } catch (error) {
       console.error('Translation batch failed:', error);
@@ -137,13 +165,40 @@ class TranslationService {
     }
   }
 
-  // Placeholder for OpenAI translation - will implement in Step 3
+  // Real OpenAI translation implementation
   private async translateBatch(
     texts: string[],
     targetLanguage: string
   ): Promise<string[]> {
-    // Temporary mock - will be replaced with OpenAI API call
-    return texts.map((text) => `[${targetLanguage.toUpperCase()}] ${text}`);
+    // Import config to check if real translation is enabled
+    const { TRANSLATION_CONFIG } = await import('./translationConfig');
+
+    if (!TRANSLATION_CONFIG.USE_REAL_TRANSLATION) {
+      // Fallback to mock for development
+      if (TRANSLATION_CONFIG.ENABLE_LOGGING) {
+        console.log(
+          `Mock translating ${texts.length} texts to ${targetLanguage}`
+        );
+      }
+      return texts.map((text) => `[${targetLanguage.toUpperCase()}] ${text}`);
+    }
+
+    try {
+      // Dynamically import OpenAI service to avoid loading it unnecessarily
+      const { openaiService } = await import('./openaiService');
+
+      if (TRANSLATION_CONFIG.ENABLE_LOGGING) {
+        console.log(
+          `Real translating ${texts.length} texts to ${targetLanguage} via OpenAI`
+        );
+      }
+
+      return await openaiService.translateBatch(texts, targetLanguage);
+    } catch (error) {
+      console.error('OpenAI translation failed, falling back to mock:', error);
+      // Fallback to mock on any error
+      return texts.map((text) => `[${targetLanguage.toUpperCase()}] ${text}`);
+    }
   }
 
   // Generate consistent ID for text
