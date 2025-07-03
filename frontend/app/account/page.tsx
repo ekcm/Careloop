@@ -26,6 +26,16 @@ const AuthPage: FC = () => {
   const signInText = useT('Sign in or create an account.');
   const testText = useT('Text to be dynamically translated');
 
+  const getURL = () => {
+    let url =
+      process?.env?.NEXT_PUBLIC_SITE_URL ??
+      process?.env?.NEXT_PUBLIC_VERCEL_URL ??
+      'http://localhost:3000/';
+    url = url.startsWith('http') ? url : `https://${url}`;
+    url = url.endsWith('/') ? url : `${url}/`;
+    return url;
+  };
+
   /**
    * Effect hook to check for an active session and listen for auth state changes.
    */
@@ -107,6 +117,9 @@ const AuthPage: FC = () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
+        options: {
+          redirectTo: getURL(),
+        },
       });
       if (error) throw error;
       // After successful sign-in, Supabase redirects to your site.
