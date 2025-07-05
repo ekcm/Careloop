@@ -1,11 +1,13 @@
 import LanguageSwitcher from './LanguageSwitcher';
 import { useT } from '@/hooks/useTranslation';
+import useUser from '@/hooks/useUser';
 
 export default function Header() {
+  const userName = useUser()?.user?.username || 'User';
   // Move all translation hooks inside the component
-  const morningGreeting = useT('Good morning! 👋');
-  const afternoonGreeting = useT('Good afternoon! 👋');
-  const eveningGreeting = useT('Good evening! 👋');
+  const morningGreeting = useT('Good morning');
+  const afternoonGreeting = useT('Good afternoon');
+  const eveningGreeting = useT('Good evening');
   const careText = useT("Let's take care of Grandma today");
 
   // Create a function that uses the translated strings
@@ -19,7 +21,9 @@ export default function Header() {
   return (
     <div className="mb-4 flex flex-row items-center justify-between">
       <div>
-        <h2 className="text-lg font-semibold">{getGreeting()}</h2>
+        <h2 className="text-lg font-semibold">
+          {getGreeting()} {userName} {'! 👋'}
+        </h2>
         <p className="text-xs text-muted-foreground">{careText}</p>
       </div>
       <LanguageSwitcher />
