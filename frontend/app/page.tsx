@@ -49,6 +49,7 @@ export default function HomePage() {
   const failedAddText = useT('Failed to add task.');
   const failedDeleteText = useT('Failed to delete task.');
   const groupRequiredText = useT('You must be in a group to add a task.');
+  const logInText = useT('Log In');
 
   const today = getTodayString();
 
@@ -224,11 +225,58 @@ export default function HomePage() {
   );
 
   if (loading) {
-    return <div className="p-4">{loadingText}</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <svg
+          className="animate-spin h-8 w-8 text-blue-500 mb-4"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+          ></path>
+        </svg>
+        <span className="text-gray-600 text-lg">{loadingText}</span>
+      </div>
+    );
   }
 
   if (!session) {
-    return <div className="p-4">{loginText}</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <svg
+          className="h-12 w-12 text-gray-400 mb-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 1115 0v.75a.75.75 0 01-.75.75h-13.5a.75.75 0 01-.75-.75v-.75z"
+          />
+        </svg>
+        <span className="text-gray-700 text-lg">{loginText}</span>
+        <a
+          href="/login"
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+        >
+          {logInText}
+        </a>
+      </div>
+    );
   }
 
   if (!group) {
