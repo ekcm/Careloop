@@ -22,6 +22,8 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { NewTodo } from '@/apis/supabaseApi';
 import { useT } from '@/hooks/useTranslation';
+import { taskIconMap } from '@/lib/typing';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface AddTaskProps {
   onAdd: (task: Omit<NewTodo, 'user_id' | 'group_id'>) => void;
@@ -34,6 +36,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
   const [reward, setReward] = useState('');
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [time, setTime] = useState('');
+  const [icon, setIcon] = useState('');
 
   // Translation hooks
   const addTaskText = useT('Add Task');
@@ -41,6 +44,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
   const dateText = useT('Date');
   const timeText = useT('Time');
   const pickDateText = useT('Pick a date');
+  const labelHeaderText = useT('Label');
   const taskLabelText = useT('Task Label (e.g., Finish report)');
   const notesText = useT('Notes (optional)');
   const rewardText = useT('Reward (optional)');
@@ -96,7 +100,40 @@ export default function AddTask({ onAdd }: AddTaskProps) {
         <DialogHeader>
           <DialogTitle>{addNewTaskText}</DialogTitle>
         </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <p className="mb-1 text-sm font-medium">Icon</p>
+            <RadioGroup
+              value={icon}
+              onValueChange={(value) => setIcon(value)}
+              className="grid grid-cols-5 gap-3"
+            >
+              {Object.entries(taskIconMap).map(([key]) => (
+                <RadioGroupItem
+                  key={key}
+                  value={key}
+                  className="peer sr-only"
+                />
+              ))}
+              {Object.entries(taskIconMap).map(([key, IconNode]) => (
+                <label
+                  key={key}
+                  htmlFor={key}
+                  className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors cursor-pointer ${
+                    icon === key
+                      ? 'bg-primary/10 border-primary'
+                      : 'bg-muted hover:bg-muted/60'
+                  }`}
+                  onClick={() => setIcon(key)}
+                >
+                  {IconNode}
+                </label>
+              ))}
+            </RadioGroup>
+          </div>
+        </div>
         <div className="space-y-4 py-2">
+          <p className="mb-1 text-sm font-medium">{labelHeaderText}</p>
           {/* Task Label Input */}
           <Input
             placeholder={taskLabelText}
