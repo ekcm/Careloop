@@ -116,5 +116,11 @@ export function useTranslations(texts: string[]): UseTranslationResult[] {
  */
 export function useT(text: string): string {
   const { translatedText } = useTranslation(text);
+  if (
+    typeof translatedText === 'string' &&
+    translatedText.toLowerCase().includes('error')
+  ) {
+    return text;
+  }
   return translatedText;
 }
