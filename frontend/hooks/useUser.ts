@@ -38,7 +38,7 @@ export default function useUser() {
     setUser({
       id: session.user.id || '',
       email: session.user.email ?? '',
-      username: data?.username ?? '',
+      username: session.user.user_metadata.display_name ?? '',
     });
     setLoading(false);
   };

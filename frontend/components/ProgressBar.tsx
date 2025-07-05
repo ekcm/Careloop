@@ -4,21 +4,23 @@ import { Progress } from '@/components/ui/progress';
 import FireworksAnimation from './FireworksAnimation';
 import { Todo } from '@/apis/supabaseApi';
 import { useT } from '@/hooks/useTranslation';
+import useUser from '@/hooks/useUser';
 
 const encouragementMessages = [
-  'Thank you for your loving care for Grandma. You’re truly appreciated! 🌸',
-  'Your kindness and dedication to Grandma make all the difference. Thank you! 🙏',
-  'Grandma is lucky to have you looking after her with such warmth and care. ❤️',
-  'Thank you for being such a wonderful helper to Grandma. Your efforts don’t go unnoticed! �',
-  'Your hard work and compassion mean the world to Grandma and all of us. Thank you! 🌼',
-  'With your care, Grandma feels safe and loved every day. Thank you so much! 🤗',
-  'We’re grateful for your patience and dedication in caring for Grandma. Thank you! 💕',
-  'Thank you for your gentle and loving touch in looking after Grandma. You’re amazing! 🌹',
-  'Your support and care make Grandma’s days brighter. Thank you from the bottom of our hearts! 💖',
-  'Thank you for being a true blessing in Grandma’s life. We appreciate you! 🌷',
+  'Thank you for your loving care for Grandma, {{userName}}. You’re truly appreciated! 🌸',
+  'Your kindness and dedication to Grandma make all the difference, {{userName}}. Thank you! 🙏',
+  'Grandma is lucky to have you, {{userName}}, looking after her with such warmth and care. ❤️',
+  'Thank you for being such a wonderful helper to Grandma, {{userName}}. Your efforts don’t go unnoticed! �',
+  'Your hard work and compassion mean the world to Grandma and all of us, {{userName}}. Thank you! 🌼',
+  'With your care, Grandma feels safe and loved every day, {{userName}}. Thank you so much! 🤗',
+  'We’re grateful for your patience and dedication in caring for Grandma, {{userName}}. Thank you! 💕',
+  'Thank you for your gentle and loving touch in looking after Grandma, {{userName}}. You’re amazing! 🌹',
+  'Your support and care make Grandma’s days brighter, {{userName}}. Thank you from the bottom of our hearts! 💖',
+  'Thank you for being a true blessing in Grandma’s life, {{userName}}. We appreciate you! 🌷',
 ];
 
 export default function ProgressBar({ tasks }: { tasks: Todo[] }) {
+  const userName = useUser()?.user?.username || 'User';
   const today = new Date().toISOString().split('T')[0];
 
   const todaysTasks = tasks.filter(
@@ -41,7 +43,7 @@ export default function ProgressBar({ tasks }: { tasks: Todo[] }) {
         <FireworksAnimation
           toastText={encouragementMessages[
             Math.floor(Math.random() * encouragementMessages.length)
-          ].replace('{{userName}}', 'NAME_PLACEHOLDER')}
+          ].replace('{{userName}}', userName)}
         />
       )}
       <div className="flex justify-between items-center mb-2">
