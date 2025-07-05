@@ -30,7 +30,7 @@ export default function TaskItem({
   time,
   date,
   completed,
-  // icon,
+  icon,
   notes,
   onToggle,
   onDelete,
@@ -70,8 +70,7 @@ export default function TaskItem({
         )}
       >
         <div className="flex items-center gap-3 min-w-0">
-          {/* TODO ERIC */}
-          {taskIconMap['checklist']}
+          {taskIconMap[icon]}
           <div className="min-w-0">
             <p
               className={cn(

@@ -245,13 +245,10 @@ export const getGroupTodos = async (groupId: string): Promise<Todo[]> => {
  * @throws Throws an error if the insert operation fails.
  */
 export const addTodo = async (newTodo: NewTodo): Promise<Todo> => {
-  // TODO ERIC
-  // Remove 'icon' from newTodo before inserting
-  const { icon, ...todoWithoutIcon } = newTodo;
   const { data, error } = await supabase
     .from('todos')
     .insert({
-      ...todoWithoutIcon,
+      ...newTodo,
       is_completed: false,
     })
     .select()
