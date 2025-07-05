@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Todo,
@@ -24,6 +25,8 @@ import { useT } from '@/hooks/useTranslation';
 const getTodayString = () => new Date().toISOString().split('T')[0];
 
 export default function HomePage() {
+  const router = useRouter();
+
   const [session, setSession] = useState<Session | null>(null);
   const [tasks, setTasks] = useState<Todo[]>([]);
   const [group, setGroup] = useState<Group | null>(null);
@@ -32,7 +35,6 @@ export default function HomePage() {
 
   // Translation hooks
   const loadingText = useT('Loading tasks...');
-  const loginText = useT('Please log in to view your tasks.');
   const welcomeText = useT('Welcome!');
   const groupNeededText = useT(
     'You need to be in a group to see and create tasks.'
@@ -49,28 +51,30 @@ export default function HomePage() {
   const failedAddText = useT('Failed to add task.');
   const failedDeleteText = useT('Failed to delete task.');
   const groupRequiredText = useT('You must be in a group to add a task.');
-  const logInText = useT('Log In');
 
   const today = getTodayString();
 
   /**
    * Effect hook to check for an active session and listen for auth state changes.
+   * Redirect to /account if not logged in.
    */
   useEffect(() => {
+    // Fetch current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      if (!session) router.replace('/account');
     });
 
+    // Subscribe to auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (!session) router.replace('/account');
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+    return () => subscription.unsubscribe();
+  }, [router]);
 
   /**
    * Fetches all necessary data from Supabase: user's group and the group's todos.
@@ -112,9 +116,7 @@ export default function HomePage() {
     fetchData();
   }, [fetchData]);
 
-  /**
-   * Toggles the completion status of a task and updates the database.
-   */
+  /* -------------------- (handlers unchanged) -------------------- */
   const toggleTask = async (id: number, currentStatus: boolean) => {
     setTasks((prev) =>
       prev.map((t) =>
@@ -133,9 +135,6 @@ export default function HomePage() {
     }
   };
 
-  /**
-   * Adds a new task to the database and updates the UI.
-   */
   const handleAddTask = async (
     taskData: Omit<NewTodo, 'user_id' | 'group_id'>
   ) => {
@@ -143,13 +142,11 @@ export default function HomePage() {
       setError(groupRequiredText);
       return;
     }
-
     const newTodoData: NewTodo = {
       ...taskData,
       user_id: session.user.id,
       group_id: group.id,
     };
-
     try {
       const addedTask = await addTodo(newTodoData);
       setTasks((prev) => [addedTask, ...prev]);
@@ -158,22 +155,18 @@ export default function HomePage() {
     }
   };
 
-  /**
-   * Deletes a task from the database and updates the UI.
-   */
   const handleDeleteTask = async (id: number) => {
     const originalTasks = tasks;
-    // Optimistically update the UI
-    setTasks((prev) => prev.filter((task) => task.id !== id));
+    setTasks((prev) => prev.filter((task) => task.id !== id)); // optimistic
     try {
       await deleteTodo(id);
     } catch {
-      // Revert UI on error
-      setTasks(originalTasks);
+      setTasks(originalTasks); // revert
       setError(failedDeleteText);
     }
   };
 
+  /* -------------------- (helpers & rendering logic unchanged) -------------------- */
   const sortTasks = (list: Todo[]) =>
     [...list].sort((a, b) => {
       if (a.is_completed !== b.is_completed) return a.is_completed ? 1 : -1;
@@ -182,7 +175,6 @@ export default function HomePage() {
       return dateA - dateB;
     });
 
-  // Split tasks by date
   const pastTasks = sortTasks(
     tasks.filter((task) => task.date_and_time.split('T')[0] < today)
   );
@@ -225,6 +217,11 @@ export default function HomePage() {
     </>
   );
 
+  /* -------------------------------------------------------------------------- */
+  /*  UI states below remain the same except the "not logged in" state is gone  */
+  /*  because the user will have been redirected already.                       */
+  /* -------------------------------------------------------------------------- */
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -241,44 +238,19 @@ export default function HomePage() {
             r="10"
             stroke="currentColor"
             strokeWidth="4"
-          ></circle>
+          />
           <path
             className="opacity-75"
             fill="currentColor"
             d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-          ></path>
+          />
         </svg>
         <span className="text-gray-600 text-lg">{loadingText}</span>
       </div>
     );
   }
 
-  if (!session) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <svg
-          className="h-12 w-12 text-gray-400 mb-4"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 1115 0v.75a.75.75 0 01-.75.75h-13.5a.75.75 0 01-.75-.75v-.75z"
-          />
-        </svg>
-        <span className="text-gray-700 text-lg">{loginText}</span>
-        <a
-          href="/login"
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-        >
-          {logInText}
-        </a>
-      </div>
-    );
-  }
+  /* No need for a "not‑session" check; we're already redirected */
 
   if (!group) {
     return (

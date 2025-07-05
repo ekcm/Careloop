@@ -1,10 +1,11 @@
 'use client';
+
 import React, { useState, FC, ChangeEvent, MouseEvent, useEffect } from 'react';
 import { createClient, Session } from '@supabase/supabase-js';
 import { UserPage } from '@/components/account-page/UserPage';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useT } from '@/hooks/useTranslation';
-import { Notification } from '@/components/Notification';
+import { toast } from 'sonner';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'SUPABASE_URL';
 const supabaseAnonKey =
@@ -12,19 +13,14 @@ const supabaseAnonKey =
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const AuthPage: FC = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [session, setSession] = useState<Session | null>(null);
-  const [notification, setNotification] = useState<{
-    message: string;
-    isError?: boolean;
-  } | null>(null);
 
   // Translation hooks
   const welcomeText = useT('Welcome');
   const signInText = useT('Sign in or create an account.');
-  const testText = useT('Text to be dynamically translated');
 
   const getURL = () => {
     let url =
@@ -32,43 +28,21 @@ const AuthPage: FC = () => {
       process?.env?.NEXT_PUBLIC_VERCEL_URL ??
       'http://localhost:3000/';
     url = url.startsWith('http') ? url : `https://${url}`;
-    url = url.endsWith('/') ? url : `${url}/`;
-    return url;
+    return url.endsWith('/') ? url : `${url}/`;
   };
 
-  /**
-   * Effect hook to check for an active session and listen for auth state changes.
-   */
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => setSession(session));
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
-  /**
-   * Shows a notification message for a few seconds.
-   */
-  const showNotification = (message: string, isError: boolean = false) => {
-    setNotification({ message, isError });
-    setTimeout(() => {
-      setNotification(null);
-    }, 5000);
-  };
-
-  /**
-   * Handles the user login process.
-   * @param {MouseEvent<HTMLButtonElement>} e - The mouse event from the button click.
-   */
   const handleLogin = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -79,73 +53,48 @@ const AuthPage: FC = () => {
       });
       if (error) throw error;
     } catch {
-      showNotification(
-        'An error occurred while logging in. Please check your login details.',
-        true
-      );
+      toast.error('Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
   };
 
-  /**
-   * Handles the user signup process.
-   * @param {MouseEvent<HTMLButtonElement>} e - The mouse event from the button click.
-   */
   const handleSignup = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setLoading(true);
     try {
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
-      showNotification('Check your email for the confirmation link!');
+      toast.success('Signup successful!');
     } catch {
-      showNotification(
-        'An error occurred while signing up. Please check your details and try again.',
-        true
-      );
+      toast.error('Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  /**
-   * Handles the Google login process.
-   */
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: getURL(),
-        },
+        options: { redirectTo: getURL() },
       });
       if (error) throw error;
-      // After successful sign-in, Supabase redirects to your site.
-      // The onAuthStateChange listener will handle setting the session.
     } catch {
-      showNotification(
-        'An error occurred while signing in with Google. Please try again.',
-        true
-      );
+      toast.error('Google login failed.');
+    } finally {
       setLoading(false);
     }
   };
 
-  /**
-   * Handles the user logout process.
-   */
   const handleLogout = async () => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
     } catch {
-      showNotification(
-        'An error occurred while logging out. Please try again.',
-        true
-      );
+      toast.error('Logout failed.');
     } finally {
       setLoading(false);
     }
@@ -153,35 +102,19 @@ const AuthPage: FC = () => {
 
   if (session) {
     return (
-      <>
-        <Notification
-          message={notification?.message || ''}
-          isError={notification?.isError}
-          onClose={() => setNotification(null)}
-        />
-        <UserPage
-          session={session}
-          handleLogout={handleLogout}
-          loading={loading}
-        />
-      </>
+      <UserPage
+        session={session}
+        handleLogout={handleLogout}
+        loading={loading}
+      />
     );
   }
 
   return (
     <div className="w-full h-screen flex flex-col items-center justify-center p-4">
-      {/* create a button on top right of the page to toggle translation */}
       <div className="absolute top-4 right-4">
         <LanguageSwitcher />
-
-        <p>{testText}</p>
       </div>
-
-      <Notification
-        message={notification?.message || ''}
-        isError={notification?.isError}
-        onClose={() => setNotification(null)}
-      />
       <div className="w-full max-w-md p-8 space-y-6">
         <header>
           <h1 className="text-3xl font-bold text-center text-gray-800">
@@ -190,7 +123,6 @@ const AuthPage: FC = () => {
           <p className="text-center text-gray-500 mt-2">{signInText}</p>
         </header>
         <form className="space-y-4">
-          {/* Email Input */}
           <div>
             <label
               htmlFor="email"
@@ -210,7 +142,6 @@ const AuthPage: FC = () => {
               required
             />
           </div>
-          {/* Password Input */}
           <div>
             <label
               htmlFor="password"
@@ -230,18 +161,17 @@ const AuthPage: FC = () => {
               required
             />
           </div>
-          {/* Action Buttons */}
           <div className="flex flex-row gap-4 ">
             <button
               onClick={handleLogin}
-              className="w-full h-full px-4 py-2 font-semibold text-white bg-blue-400 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              className="w-full px-4 py-2 font-semibold text-white bg-blue-400 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               disabled={loading}
             >
               {loading ? 'Logging in...' : 'Log In'}
             </button>
             <button
               onClick={handleSignup}
-              className="w-full h-full px-4 py-2 font-semibold text-white bg-green-400 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+              className="w-full px-4 py-2 font-semibold text-white bg-green-400 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
               disabled={loading}
             >
               {loading ? 'Signing up...' : 'Sign Up'}
@@ -249,13 +179,13 @@ const AuthPage: FC = () => {
           </div>
         </form>
       </div>
+
       <div className="relative flex items-center justify-center my-4">
         <div className="flex-grow border-t border-gray-300"></div>
         <span className="flex-shrink mx-4 text-sm text-gray-400">OR</span>
         <div className="flex-grow border-t border-gray-300"></div>
       </div>
 
-      {/* Google Login Button */}
       <button
         onClick={handleGoogleLogin}
         className="w-full flex items-center justify-center px-4 py-2 font-semibold text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 max-w-sm"
