@@ -14,6 +14,8 @@ export const LANGUAGES = [
   { code: 'ta', label: 'தமிழ்', emoji: '🇮🇳' },
   { code: 'ms', label: 'Bahasa Melayu', emoji: '🇲🇾' },
   { code: 'tl', label: 'Tagalog', emoji: '🇵🇭' },
+  { code: 'id', label: 'Bahasa Indonesia', emoji: '🇮🇩' },
+  { code: 'my', label: 'မြန်မာဘာသာ', emoji: '🇲🇲' },
 ] as const;
 
 interface LanguageContextType {
