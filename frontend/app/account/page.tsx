@@ -52,6 +52,7 @@ const AuthPage: FC = () => {
         password,
       });
       if (error) throw error;
+      toast.success('Login successful!');
     } catch {
       toast.error('Login failed. Please check your credentials.');
     } finally {

@@ -127,14 +127,12 @@ export default function TaskItem({
         </div>
       </div>
 
-      {/* Notes section */}
       {hasNotes && showNotes && (
-        <div className="mt-1 mb-3 mx-3 p-3 rounded-md border border-blue-200 dark:border-zinc-700 bg-blue-50 dark:bg-zinc-800 text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap">
+        <div className="mt-1 mb-3 mx-3 p-3 rounded-xl bg-blue-50 dark:bg-zinc-800 text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap shadow">
           {translatedNotes}
         </div>
       )}
 
-      {/* Confirmation Modal for Deletion */}
       {showConfirm && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
           <div className="bg-white dark:bg-zinc-900 p-4 rounded-lg shadow-lg flex flex-col items-center gap-3">
