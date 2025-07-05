@@ -39,6 +39,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
   const [icon, setIcon] = useState('');
 
   // Translation hooks
+  const iconText = useT('Icon');
   const addTaskText = useT('Add Task');
   const addNewTaskText = useT('Add New Task');
   const dateText = useT('Date');
@@ -104,7 +105,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <p className="mb-1 text-sm font-medium">Icon</p>
+            <p className="mb-1 text-sm font-medium">{iconText}</p>
             <RadioGroup
               value={icon}
               onValueChange={(value) => setIcon(value)}

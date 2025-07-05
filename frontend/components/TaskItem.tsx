@@ -65,7 +65,7 @@ export default function TaskItem({
                 completed && 'line-through text-muted-foreground'
               )}
             >
-              {label}
+              {useT(label)}
             </p>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
               <p className="flex items-center gap-1">
