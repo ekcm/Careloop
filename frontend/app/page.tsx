@@ -214,6 +214,7 @@ export default function HomePage() {
                 completed={task.is_completed}
                 date={task.date_and_time.split('T')[0]}
                 time={task.date_and_time.split('T')[1].substring(0, 5)}
+                notes={task.notes || ''}
                 onToggle={() => toggleTask(task.id, task.is_completed)}
                 onDelete={() => handleDeleteTask(task.id)}
               />
