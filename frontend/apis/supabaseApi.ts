@@ -20,6 +20,7 @@ export interface Todo {
   reward: string | null;
   notes: string | null;
   group_id: string;
+  icon: string;
 }
 
 export interface NewTodo {
@@ -29,6 +30,7 @@ export interface NewTodo {
   notes?: string | null;
   reward?: string | null;
   group_id?: string;
+  icon: string;
 }
 
 export interface Group {
@@ -243,10 +245,13 @@ export const getGroupTodos = async (groupId: string): Promise<Todo[]> => {
  * @throws Throws an error if the insert operation fails.
  */
 export const addTodo = async (newTodo: NewTodo): Promise<Todo> => {
+  // TODO ERIC
+  // Remove 'icon' from newTodo before inserting
+  const { icon, ...todoWithoutIcon } = newTodo;
   const { data, error } = await supabase
     .from('todos')
     .insert({
-      ...newTodo,
+      ...todoWithoutIcon,
       is_completed: false,
     })
     .select()

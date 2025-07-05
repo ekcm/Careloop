@@ -60,6 +60,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
     setReward('');
     setDate(new Date());
     setTime('');
+    setIcon('');
   };
 
   const handleAddTask = () => {
@@ -81,6 +82,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
       date_and_time: combinedDateTime,
       notes: notes.trim() || null,
       reward: reward.trim() || null,
+      icon: icon || 'checklist',
     };
 
     onAdd(taskToAdd);

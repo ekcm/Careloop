@@ -1,9 +1,10 @@
 'use client';
 
-import { CheckCircle2, Clock, CalendarDays, Trash2, Star } from 'lucide-react';
+import { CheckCircle2, Clock, CalendarDays, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useT } from '@/hooks/useTranslation';
+import { taskIconMap } from '@/lib/typing';
 
 type TaskItemProps = {
   id: number;
@@ -11,6 +12,7 @@ type TaskItemProps = {
   completed: boolean;
   date: string;
   time: string;
+  icon: string;
   onToggle: () => void;
   onDelete: () => void;
 };
@@ -20,6 +22,7 @@ export default function TaskItem({
   time,
   date,
   completed,
+  // icon,
   onToggle,
   onDelete,
 }: TaskItemProps) {
@@ -53,7 +56,8 @@ export default function TaskItem({
         )}
       >
         <div className="flex items-center gap-3 min-w-0">
-          <Star className="w-6 h-6 text-yellow-400 flex-shrink-0" />
+          {/* TODO ERIC */}
+          {taskIconMap['checklist']}
           <div className="min-w-0">
             <p
               className={cn(

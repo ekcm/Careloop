@@ -208,6 +208,7 @@ export default function HomePage() {
             >
               <TaskItem
                 id={task.id}
+                icon={task.icon}
                 label={task.label}
                 completed={task.is_completed}
                 date={task.date_and_time.split('T')[0]}
