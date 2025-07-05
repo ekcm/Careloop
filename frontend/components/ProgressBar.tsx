@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { Progress } from '@/components/ui/progress';
 import FireworksAnimation from './FireworksAnimation';
 import { Todo } from '@/apis/supabaseApi';
@@ -10,7 +11,7 @@ const encouragementMessages = [
   'Thank you for your loving care for Grandma, {{userName}}. You’re truly appreciated! 🌸',
   'Your kindness and dedication to Grandma make all the difference, {{userName}}. Thank you! 🙏',
   'Grandma is lucky to have you, {{userName}}, looking after her with such warmth and care. ❤️',
-  'Thank you for being such a wonderful helper to Grandma, {{userName}}. Your efforts don’t go unnoticed! �',
+  'Thank you for being such a wonderful helper to Grandma, {{userName}}. Your efforts don’t go unnoticed! 🫶',
   'Your hard work and compassion mean the world to Grandma and all of us, {{userName}}. Thank you! 🌼',
   'With your care, Grandma feels safe and loved every day, {{userName}}. Thank you so much! 🤗',
   'We’re grateful for your patience and dedication in caring for Grandma, {{userName}}. Thank you! 💕',
@@ -32,6 +33,22 @@ export default function ProgressBar({ tasks }: { tasks: Todo[] }) {
   const progress =
     todaysTasks.length > 0 ? (completedCount / todaysTasks.length) * 100 : 0;
 
+  const [showFireworks, setShowFireworks] = useState(false);
+  const previousProgress = useRef(progress);
+
+  useEffect(() => {
+    if (
+      previousProgress.current < 100 &&
+      progress === 100 &&
+      todaysTasks.length > 0
+    ) {
+      setShowFireworks(true);
+    } else {
+      setShowFireworks(false);
+    }
+    previousProgress.current = progress;
+  }, [progress, todaysTasks.length]);
+
   // Translation hooks
   const todaysProgressText = useT("Today's Progress");
   const tasksCompletedText = useT('of tasks completed');
@@ -39,7 +56,7 @@ export default function ProgressBar({ tasks }: { tasks: Todo[] }) {
 
   return (
     <div className="rounded-xl bg-blue-50 dark:bg-blue-950 p-4 mb-6 relative overflow-hidden">
-      {progress === 100 && todaysTasks.length > 0 && (
+      {showFireworks && (
         <FireworksAnimation
           toastText={encouragementMessages[
             Math.floor(Math.random() * encouragementMessages.length)
