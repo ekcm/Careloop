@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  CheckCircle2,
-  Clock,
-  CalendarDays,
-  Trash2,
-  ChevronDown,
-  ChevronUp,
-} from 'lucide-react';
+import { CheckCircle2, Clock, CalendarDays, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useT } from '@/hooks/useTranslation';
@@ -20,7 +13,6 @@ type TaskItemProps = {
   date: string;
   time: string;
   icon: string;
-  notes?: string;
   onToggle: () => void;
   onDelete: () => void;
 };
@@ -31,20 +23,16 @@ export default function TaskItem({
   date,
   completed,
   // icon,
-  notes,
   onToggle,
   onDelete,
 }: TaskItemProps) {
   const [showConfirm, setShowConfirm] = useState(false);
-  const [showNotes, setShowNotes] = useState(false);
 
+  // Translation hooks
   const deleteConfirmText = useT('Are you sure you want to delete this task?');
   const deleteText = useT('Delete');
   const cancelText = useT('Cancel');
   const deleteTaskAriaLabel = useT('Delete task');
-  const hideNotesLabel = useT('Hide Notes');
-  const viewNotesLabel = useT('View Notes');
-  const translatedNotes = useT(notes || '');
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -55,8 +43,6 @@ export default function TaskItem({
     onDelete();
     setShowConfirm(false);
   };
-
-  const hasNotes = notes && notes.trim() !== '';
 
   return (
     <>
@@ -95,22 +81,6 @@ export default function TaskItem({
         </div>
 
         <div className="flex items-center gap-2">
-          {hasNotes && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowNotes(!showNotes);
-              }}
-              className="p-1 rounded hover:bg-blue-100 dark:hover:bg-zinc-700 transition-colors"
-              aria-label={showNotes ? hideNotesLabel : viewNotesLabel}
-            >
-              {showNotes ? (
-                <ChevronUp className="w-5 h-5 text-blue-500" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-blue-500" />
-              )}
-            </button>
-          )}
           <CheckCircle2
             className={cn(
               'w-7 h-7 transition-colors',
@@ -127,13 +97,6 @@ export default function TaskItem({
           </button>
         </div>
       </div>
-
-      {/* Notes section */}
-      {hasNotes && showNotes && (
-        <div className="mt-1 mb-3 mx-3 p-3 rounded-md border border-blue-200 dark:border-zinc-700 bg-blue-50 dark:bg-zinc-800 text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap">
-          {translatedNotes}
-        </div>
-      )}
 
       {/* Confirmation Modal for Deletion */}
       {showConfirm && (
