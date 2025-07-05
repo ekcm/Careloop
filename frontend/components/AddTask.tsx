@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, StickyNote, Award } from 'lucide-react';
+import { Plus, StickyNote } from 'lucide-react';
 import {
   Dialog,
   DialogTrigger,
@@ -48,7 +48,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
   const labelHeaderText = useT('Label');
   const taskLabelText = useT('Task Label (e.g., Finish report)');
   const notesText = useT('Notes (optional)');
-  const rewardText = useT('Reward (optional)');
+  // const rewardText = useT('Reward (optional)');
   const saveTaskText = useT('Save Task');
   const validationErrorText = useT(
     'Please fill in the task label, date, and time.'
@@ -189,7 +189,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
           </div>
 
           {/* Optional Reward Input */}
-          <div className="relative">
+          {/* <div className="relative">
             <Award className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder={rewardText}
@@ -197,7 +197,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
               onChange={(e) => setReward(e.target.value)}
               className="pl-10"
             />
-          </div>
+          </div> */}
         </div>
         <DialogFooter>
           <Button
