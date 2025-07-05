@@ -22,7 +22,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { NewTodo } from '@/apis/supabaseApi';
 import { useT } from '@/hooks/useTranslation';
-import { taskIconMap } from '@/lib/typing';
+import { taskIconMap, autoFilledText } from '@/lib/typing';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface AddTaskProps {
@@ -108,7 +108,10 @@ export default function AddTask({ onAdd }: AddTaskProps) {
             <p className="mb-1 text-sm font-medium">{iconText}</p>
             <RadioGroup
               value={icon}
-              onValueChange={(value) => setIcon(value)}
+              onValueChange={(value) => {
+                setIcon(value);
+                setLabel(autoFilledText[value]);
+              }}
               className="grid grid-cols-5 gap-3"
             >
               {Object.entries(taskIconMap).map(([key]) => (
@@ -127,7 +130,10 @@ export default function AddTask({ onAdd }: AddTaskProps) {
                       ? 'bg-primary/10 border-primary'
                       : 'bg-muted hover:bg-muted/60'
                   }`}
-                  onClick={() => setIcon(key)}
+                  onClick={() => {
+                    setIcon(key);
+                    setLabel(autoFilledText[key]);
+                  }}
                 >
                   {IconNode}
                 </label>
