@@ -44,7 +44,10 @@ export function useTranslation(text: string): UseTranslationResult {
   }, [textId, currentLanguage.code]);
 
   // Get current translation state
-  const translationItem = translationService.getTranslation(textId);
+  const translationItem = translationService.getTranslation(
+    textId,
+    currentLanguage.code
+  );
 
   const result = {
     translatedText:
@@ -96,7 +99,10 @@ export function useTranslations(texts: string[]): UseTranslationResult[] {
 
   // Return translation results for all texts
   return texts.map((text, index) => {
-    const translationItem = translationService.getTranslation(textIds[index]);
+    const translationItem = translationService.getTranslation(
+      textIds[index],
+      currentLanguage.code
+    );
 
     return {
       translatedText:

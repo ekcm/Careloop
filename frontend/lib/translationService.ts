@@ -3,6 +3,7 @@ interface TranslationItem {
   originalText: string;
   translatedText?: string;
   isTranslating?: boolean;
+  languageCode?: string; // Track which language this translation is for
 }
 
 interface TranslationBatch {
@@ -44,10 +45,29 @@ class TranslationService {
     return id;
   }
 
+  // Generate composite key for text + language combination
+  private getCompositeKey(textId: string, languageCode: string): string {
+    return `${textId}_${languageCode}`;
+  }
+
   // Add text to pending batch for translation
   async queueForTranslation(id: string, targetLanguage: string) {
     const item = this.translations.get(id);
     if (!item) return;
+
+    // Check if we already have a translation for this text + language combination
+    const compositeKey = this.getCompositeKey(id, targetLanguage);
+    const existingTranslation = this.translations.get(compositeKey);
+
+    if (existingTranslation && existingTranslation.translatedText) {
+      // We already have this translation, no need to queue
+      if (this.config?.ENABLE_LOGGING) {
+        console.log(
+          `Cache hit for "${item.originalText}" -> "${existingTranslation.translatedText}" (${targetLanguage})`
+        );
+      }
+      return;
+    }
 
     // Mark as translating
     item.isTranslating = true;
@@ -91,8 +111,21 @@ class TranslationService {
     }
   }
 
-  // Get translation for a text ID
-  getTranslation(id: string): TranslationItem | undefined {
+  // Get translation for a text ID and language
+  getTranslation(
+    id: string,
+    languageCode?: string
+  ): TranslationItem | undefined {
+    if (languageCode) {
+      // Try to get cached translation for specific language
+      const compositeKey = this.getCompositeKey(id, languageCode);
+      const cachedTranslation = this.translations.get(compositeKey);
+      if (cachedTranslation) {
+        return cachedTranslation;
+      }
+    }
+
+    // Fallback to original item (for backward compatibility)
     return this.translations.get(id);
   }
 
@@ -146,7 +179,20 @@ class TranslationService {
       batch.ids.forEach((id, index) => {
         const item = this.translations.get(id);
         if (item) {
-          item.translatedText = translations[index] || item.originalText;
+          const translatedText = translations[index] || item.originalText;
+
+          // Store the translation with composite key for caching
+          const compositeKey = this.getCompositeKey(id, batch.targetLanguage);
+          this.translations.set(compositeKey, {
+            id: compositeKey,
+            originalText: item.originalText,
+            translatedText,
+            isTranslating: false,
+            languageCode: batch.targetLanguage,
+          });
+
+          // Also update the original item for backward compatibility
+          item.translatedText = translatedText;
           item.isTranslating = false;
           this.translations.set(id, item);
         }
