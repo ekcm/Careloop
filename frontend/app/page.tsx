@@ -14,6 +14,7 @@ import {
   updateTodoCompletion,
   deleteTodo,
   supabase,
+  Comment,
 } from '@/apis/supabaseApi';
 import ProgressBar from '@/components/ProgressBar';
 import Header from '@/components/Header';
@@ -32,7 +33,7 @@ export default function HomePage() {
   const [group, setGroup] = useState<Group | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [comments, setComments] = useState<Record<number, Comment[]>>({});
   // Translation hooks
   const loadingText = useT('Loading tasks...');
   const welcomeText = useT('Welcome!');
@@ -51,6 +52,7 @@ export default function HomePage() {
   const failedAddText = useT('Failed to add task.');
   const failedDeleteText = useT('Failed to delete task.');
   const groupRequiredText = useT('You must be in a group to add a task.');
+  const failedCommentLoadText = useT('Failed to load comments.');
 
   const today = getTodayString();
 
@@ -77,7 +79,7 @@ export default function HomePage() {
   }, [router]);
 
   /**
-   * Fetches all necessary data from Supabase: user's group and the group's todos.
+   * Fetches all necessary data from Supabase: user's group, todos, and all comments for those todos.
    */
   const fetchData = useCallback(async () => {
     if (!session) {
@@ -88,29 +90,62 @@ export default function HomePage() {
     setLoading(true);
     setError(null);
     try {
-      // 1. Get user's profile to find their group_id
       const userProfile = await getUserProfile(session.user.id);
-      if (userProfile?.group_id) {
-        // 2. If in a group, fetch group details
-        const groupDetails = await getGroupDetails(userProfile.group_id);
-        setGroup(groupDetails);
-
-        if (groupDetails) {
-          // 3. Fetch the group's todos
-          const groupTasks = await getGroupTodos(groupDetails.id);
-          setTasks(groupTasks);
-        }
-      } else {
-        // User is not in a group, clear tasks and group
+      if (!userProfile?.group_id) {
         setTasks([]);
         setGroup(null);
+        setComments({});
+        return; // Early return if not in a group
       }
+
+      const groupDetails = await getGroupDetails(userProfile.group_id);
+      setGroup(groupDetails);
+
+      if (!groupDetails) return; // Early return if group details not found
+
+      const groupTasks = await getGroupTodos(groupDetails.id);
+      setTasks(groupTasks);
+
+      if (groupTasks.length === 0) {
+        setComments({}); // No tasks, so clear comments
+        return; // Early return if no tasks
+      }
+
+      // Fetch all comments for the retrieved tasks in a single query
+      const taskIds = groupTasks.map((task) => task.id.toString());
+      const { data: allComments, error: commentsError } = await supabase
+        .from('comments')
+        .select(`*, profile:profiles ( display_name )`)
+        .in('todo_id', taskIds);
+
+      if (commentsError) {
+        // If comments fail, we still have tasks, but show an error.
+        setError(failedCommentLoadText);
+        setComments({}); // Reset comments
+        return;
+      }
+
+      // Group comments by their todo_id for easy lookup
+      const commentsByTodoId = allComments.reduce(
+        (acc, comment) => {
+          const todoId = parseInt(comment.todo_id, 10);
+          if (!acc[todoId]) {
+            acc[todoId] = [];
+          }
+          acc[todoId].push(comment);
+          return acc;
+        },
+        {} as Record<number, Comment[]>
+      );
+
+      setComments(commentsByTodoId);
     } catch {
+      // Catch any other errors (profile, group, tasks fetch)
       setError(failedLoadText);
     } finally {
       setLoading(false);
     }
-  }, [session, failedLoadText]);
+  }, [session, failedLoadText, failedCommentLoadText]);
 
   useEffect(() => {
     fetchData();
@@ -209,6 +244,7 @@ export default function HomePage() {
                 notes={task.notes || ''}
                 onToggle={() => toggleTask(task.id, task.is_completed)}
                 onDelete={() => handleDeleteTask(task.id)}
+                comments={comments[task.id] || []}
               />
             </motion.div>
           ))}

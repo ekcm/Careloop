@@ -50,6 +50,23 @@ export interface GroupMember {
   display_name: string | null;
 }
 
+export interface NewCommentPayload {
+  content: string;
+  todo_id: string;
+  user_id: string;
+}
+
+export interface Comment {
+  id: string;
+  created_at: string;
+  comment_content: string;
+  todo_id: string;
+  user_id: string;
+  profile: {
+    display_name: string;
+  };
+}
+
 // GROUP FUNCTIONS
 
 /**
@@ -295,6 +312,80 @@ export const deleteTodo = async (todoId: number): Promise<void> => {
 
   if (error) {
     console.error('Error deleting todo:', error);
+    throw error;
+  }
+};
+
+// Comment Functions
+
+/**
+ * Fetches all comments for a specific todo, along with the author's profile.
+ * @param todoId The ID of the todo whose comments are to be fetched.
+ * @returns A promise that resolves to an array of comments with author profiles.
+ * @throws Throws an error if the fetch operation fails.
+ */
+export const getTodoComments = async (todoId: string): Promise<Comment[]> => {
+  const { data, error } = await supabase
+    .from('comments')
+    .select(
+      `
+      *,
+      profile:profiles ( display_name )
+    `
+    )
+    .eq('todo_id', todoId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching comments:', error);
+    throw error;
+  }
+
+  return data || [];
+};
+
+/**
+ * Adds a new comment to a specific todo.
+ * @param newComment An object containing the content, todo_id, and user_id.
+ * @returns A promise that resolves to the newly created comment.
+ * @throws Throws an error if the insert operation fails.
+ */
+export const addComment = async (
+  newComment: NewCommentPayload
+): Promise<Comment> => {
+  const { data, error } = await supabase
+    .from('comments')
+    .insert(newComment)
+    .select(
+      `
+      *,
+      profile:profiles ( display_name )
+    `
+    )
+    .single();
+
+  if (error) {
+    console.error('Error adding comment:', error);
+    throw error;
+  }
+
+  return data;
+};
+
+/**
+ * Deletes a comment from the database.
+ * @param commentId The ID of the comment to delete.
+ * @returns A promise that resolves when the deletion is successful.
+ * @throws Throws an error if the delete operation fails.
+ */
+export const deleteComment = async (commentId: string): Promise<void> => {
+  const { error } = await supabase
+    .from('comments')
+    .delete()
+    .eq('id', commentId);
+
+  if (error) {
+    console.error('Error deleting comment:', error);
     throw error;
   }
 };
