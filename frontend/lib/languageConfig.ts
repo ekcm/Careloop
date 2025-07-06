@@ -6,14 +6,24 @@ export type Language = {
 };
 
 export const LANGUAGES: readonly Language[] = [
-  { code: 'en', label: 'English', emoji: '🇬🇧', openaiName: 'English' },
+  {
+    code: 'en',
+    label: 'English',
+    emoji: '🇬🇧',
+    openaiName: 'English',
+  },
   {
     code: 'zh',
     label: '中文',
     emoji: '🇨🇳',
     openaiName: 'Chinese (Simplified)',
   },
-  { code: 'ta', label: 'தமிழ்', emoji: '🇮🇳', openaiName: 'Tamil' },
+  {
+    code: 'ta',
+    label: 'தமிழ்',
+    emoji: '🇮🇳',
+    openaiName: 'Tamil',
+  },
   {
     code: 'ms',
     label: 'Bahasa Melayu',

@@ -4,7 +4,7 @@ import { useEffect, useState, MouseEvent } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import { ListTodo, User } from 'lucide-react';
+import { ListTodo, User, Languages } from 'lucide-react';
 import { supabase } from '@/apis/supabaseApi';
 import { toast } from 'sonner';
 import { useT } from '@/hooks/useTranslation';
@@ -18,6 +18,7 @@ export default function BottomNav() {
   // Localised strings
   const homeLabel = useT('Home');
   const accountLabel = useT('Account');
+  const translateLabel = useT('Translate');
   const loginFirstToast = useT('Please log in to access Home');
 
   // Fetch session once & subscribe to auth changes
@@ -35,6 +36,12 @@ export default function BottomNav() {
 
   const navItems = [
     { href: '/', icon: ListTodo, label: homeLabel, protected: true },
+    {
+      href: '/translate',
+      icon: Languages,
+      label: translateLabel,
+      protected: true,
+    },
     { href: '/account', icon: User, label: accountLabel, protected: false },
   ];
 
