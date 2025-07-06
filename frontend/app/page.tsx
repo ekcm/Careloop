@@ -14,7 +14,7 @@ import {
   updateTodoCompletion,
   deleteTodo,
   supabase,
-  Comment,
+  Profile,
 } from '@/apis/supabaseApi';
 import ProgressBar from '@/components/ProgressBar';
 import Header from '@/components/Header';
@@ -29,11 +29,11 @@ export default function HomePage() {
   const router = useRouter();
 
   const [session, setSession] = useState<Session | null>(null);
+  const [userProfile, setUserProfile] = useState<Profile | null>(null);
   const [tasks, setTasks] = useState<Todo[]>([]);
   const [group, setGroup] = useState<Group | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [comments, setComments] = useState<Record<number, Comment[]>>({});
   // Translation hooks
   const loadingText = useT('Loading tasks...');
   const welcomeText = useT('Welcome!');
@@ -94,10 +94,10 @@ export default function HomePage() {
       if (!userProfile?.group_id) {
         setTasks([]);
         setGroup(null);
-        setComments({});
+        setUserProfile(null);
         return; // Early return if not in a group
       }
-
+      setUserProfile(userProfile);
       const groupDetails = await getGroupDetails(userProfile.group_id);
       setGroup(groupDetails);
 
@@ -105,40 +105,6 @@ export default function HomePage() {
 
       const groupTasks = await getGroupTodos(groupDetails.id);
       setTasks(groupTasks);
-
-      if (groupTasks.length === 0) {
-        setComments({}); // No tasks, so clear comments
-        return; // Early return if no tasks
-      }
-
-      // Fetch all comments for the retrieved tasks in a single query
-      const taskIds = groupTasks.map((task) => task.id.toString());
-      const { data: allComments, error: commentsError } = await supabase
-        .from('comments')
-        .select(`*, profile:profiles ( display_name )`)
-        .in('todo_id', taskIds);
-
-      if (commentsError) {
-        // If comments fail, we still have tasks, but show an error.
-        setError(failedCommentLoadText);
-        setComments({}); // Reset comments
-        return;
-      }
-
-      // Group comments by their todo_id for easy lookup
-      const commentsByTodoId = allComments.reduce(
-        (acc, comment) => {
-          const todoId = parseInt(comment.todo_id, 10);
-          if (!acc[todoId]) {
-            acc[todoId] = [];
-          }
-          acc[todoId].push(comment);
-          return acc;
-        },
-        {} as Record<number, Comment[]>
-      );
-
-      setComments(commentsByTodoId);
     } catch {
       // Catch any other errors (profile, group, tasks fetch)
       setError(failedLoadText);
@@ -244,7 +210,9 @@ export default function HomePage() {
                 notes={task.notes || ''}
                 onToggle={() => toggleTask(task.id, task.is_completed)}
                 onDelete={() => handleDeleteTask(task.id)}
-                comments={comments[task.id] || []}
+                todo_id={task.id}
+                user_id={userProfile?.id || ''}
+                author_name={userProfile?.display_name || ''}
               />
             </motion.div>
           ))}

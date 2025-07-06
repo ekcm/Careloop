@@ -51,8 +51,8 @@ export interface GroupMember {
 }
 
 export interface NewCommentPayload {
-  content: string;
-  todo_id: string;
+  comment_content: string;
+  todo_id: number;
   user_id: string;
 }
 
