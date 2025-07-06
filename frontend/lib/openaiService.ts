@@ -1,13 +1,5 @@
 import OpenAI from 'openai';
-
-// Language code to full name mapping for better OpenAI understanding
-const LANGUAGE_NAMES: Record<string, string> = {
-  en: 'English',
-  zh: 'Chinese (Simplified)',
-  ta: 'Tamil',
-  ms: 'Malay (Bahasa Melayu)',
-  tl: 'Tagalog (Filipino)',
-};
+import { getOpenAIName } from './languageConfig';
 
 class OpenAIService {
   private client: OpenAI;
@@ -42,8 +34,7 @@ class OpenAIService {
   ): Promise<string[]> {
     if (texts.length === 0) return [];
 
-    const targetLanguage =
-      LANGUAGE_NAMES[targetLanguageCode] || targetLanguageCode;
+    const targetLanguage = getOpenAIName(targetLanguageCode);
 
     // Create context-aware prompt for healthcare/caregiving app
     const prompt = this.createTranslationPrompt(texts, targetLanguage);

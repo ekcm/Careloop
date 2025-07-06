@@ -82,7 +82,8 @@ class TranslationService {
     if (
       this.pendingBatch &&
       this.config &&
-      this.pendingBatch.texts.length >= this.config.MAX_BATCH_SIZE
+      (this.config.MAX_BATCH_SIZE === -1 ||
+        this.pendingBatch.texts.length >= this.config.MAX_BATCH_SIZE)
     ) {
       this.processBatch();
     } else if (this.pendingBatch) {
@@ -152,7 +153,7 @@ class TranslationService {
       });
 
       // Notify subscribers about updates
-      if (this.config.ENABLE_LOGGING) {
+      if (this.config?.ENABLE_LOGGING) {
         console.log(
           `Updated translations:`,
           batch.ids.map((id) => {
@@ -189,9 +190,9 @@ class TranslationService {
     // Import config to check if real translation is enabled
     const { TRANSLATION_CONFIG } = await import('./translationConfig');
 
-    if (!TRANSLATION_CONFIG.USE_REAL_TRANSLATION) {
+    if (!TRANSLATION_CONFIG?.USE_REAL_TRANSLATION) {
       // Fallback to mock for development
-      if (TRANSLATION_CONFIG.ENABLE_LOGGING) {
+      if (TRANSLATION_CONFIG?.ENABLE_LOGGING) {
         console.log(
           `Mock translating ${texts.length} texts to ${targetLanguage}`
         );
@@ -203,7 +204,7 @@ class TranslationService {
       // Dynamically import OpenAI service to avoid loading it unnecessarily
       const { openaiService } = await import('./openaiService');
 
-      if (TRANSLATION_CONFIG.ENABLE_LOGGING) {
+      if (TRANSLATION_CONFIG?.ENABLE_LOGGING) {
         console.log(
           `Real translating ${texts.length} texts to ${targetLanguage} via OpenAI`
         );

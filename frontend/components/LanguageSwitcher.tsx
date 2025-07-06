@@ -8,7 +8,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
-import { useLanguage, LANGUAGES } from '@/lib/LanguageContext';
+import { useLanguage } from '@/lib/LanguageContext';
+import { LANGUAGES } from '@/lib/languageConfig';
 
 export default function LanguageSwitcher() {
   const { currentLanguage, setCurrentLanguage } = useLanguage();

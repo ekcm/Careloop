@@ -52,7 +52,6 @@ export default function HomePage() {
   const failedAddText = useT('Failed to add task.');
   const failedDeleteText = useT('Failed to delete task.');
   const groupRequiredText = useT('You must be in a group to add a task.');
-  const failedCommentLoadText = useT('Failed to load comments.');
 
   const today = getTodayString();
 
@@ -111,7 +110,7 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
-  }, [session, failedLoadText, failedCommentLoadText]);
+  }, [session, failedLoadText]);
 
   useEffect(() => {
     fetchData();

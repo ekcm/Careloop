@@ -27,7 +27,7 @@ export function useTranslation(text: string): UseTranslationResult {
   // Force re-render when translations update
   useEffect(() => {
     const unsubscribe = translationService.subscribe(() => {
-      console.log(`Hook received translation update for text: "${text}"`);
+      // console.log(`Hook received translation update for text: "${text}"`);
       setUpdateCounter((prev) => prev + 1);
     });
     return () => {
@@ -56,7 +56,7 @@ export function useTranslation(text: string): UseTranslationResult {
   };
 
   // Debug logging
-  console.log(`Hook returning for "${text}":`, result.translatedText);
+  // console.log(`Hook returning for "${text}":`, result.translatedText);
 
   return result;
 }

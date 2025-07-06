@@ -1,22 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-export type Language = {
-  code: string;
-  label: string;
-  emoji: string;
-};
-
-export const LANGUAGES = [
-  { code: 'en', label: 'English', emoji: '🇬🇧' },
-  { code: 'zh', label: '中文', emoji: '🇨🇳' },
-  { code: 'ta', label: 'தமிழ்', emoji: '🇮🇳' },
-  { code: 'ms', label: 'Bahasa Melayu', emoji: '🇲🇾' },
-  { code: 'tl', label: 'Tagalog', emoji: '🇵🇭' },
-  { code: 'id', label: 'Bahasa Indonesia', emoji: '🇮🇩' },
-  { code: 'my', label: 'မြန်မာဘာသာ', emoji: '🇲🇲' },
-] as const;
+import { LANGUAGES, type Language } from './languageConfig';
 
 interface LanguageContextType {
   currentLanguage: Language;

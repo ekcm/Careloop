@@ -16,7 +16,7 @@ export const TRANSLATION_CONFIG = {
 
   // Batch processing settings
   BATCH_DELAY_MS: 500, // Wait time before processing batch
-  MAX_BATCH_SIZE: 10, // Maximum texts per API call
+  MAX_BATCH_SIZE: -1, // -1 = no limit, process all texts together
 
   // OpenAI settings
   MODEL: 'gpt-4.1-nano-2025-04-14', // Cost-effective model
