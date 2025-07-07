@@ -108,7 +108,6 @@ export default function TaskItem({
   return (
     <>
       <div
-        onClick={onToggle}
         className={cn(
           'flex justify-between items-center p-3 rounded-xl shadow-sm cursor-pointer relative',
           completed
@@ -118,27 +117,20 @@ export default function TaskItem({
       >
         <div className="flex flex-col items-center gap-3 min-w-0 w-full">
           <div className="w-full flex gap-4">
-            <div className=" flex flex-col gap-2 items-center my-auto ">
-              {taskIconMap[icon]}
+            <div
+              className=" flex gap-2 items-center my-auto flex-row"
+              onClick={onToggle}
+            >
               {completed ? (
                 <CheckSquare className="w-6 h-6 text-green-500" />
               ) : (
                 <Square className="w-6 h-6 text-gray-400" />
               )}
+              {taskIconMap[icon]}
             </div>
-            <div className="min-w-0 w-full">
-              <span className="text-muted-foreground text-xs">
-                By: {author_name}
-              </span>
-              <p
-                className={cn(
-                  'text-lg font-medium break-words',
-                  completed && 'line-through text-muted-foreground'
-                )}
-              >
-                {useT(label)}
-              </p>
-              <div className="flex items-center gap-2 text-md text-muted-foreground my-1">
+            <div className="min-w-0 w-full text-xs">
+              <div className="flex items-center gap-2 text-muted-foreground my-1">
+                <span className="text-muted-foreground">By: {author_name}</span>
                 <p className="flex items-center gap-1">
                   <CalendarDays className="w-3 h-3" />
                   {format(date, 'dd MMM yyy')}
@@ -148,9 +140,18 @@ export default function TaskItem({
                   {time}
                 </p>
               </div>
+
+              <p
+                className={cn(
+                  'text-lg font-medium break-words',
+                  completed && 'line-through text-muted-foreground'
+                )}
+              >
+                {useT(label)}
+              </p>
+
               {hasNotes && (
                 <div className="w-full border-t-1 pt-1 text-md">
-                  <span>note:</span>{' '}
                   <span className="text-muted-foreground">
                     {translatedNotes}
                   </span>
@@ -158,6 +159,14 @@ export default function TaskItem({
               )}
             </div>
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleDeleteClick}
+                className="p-1 rounded hover:bg-red-100 dark:hover:bg-zinc-700 transition-colors"
+                aria-label={deleteTaskAriaLabel}
+              >
+                <Trash2 className="w-5 h-5 text-red-500" />
+              </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -171,14 +180,6 @@ export default function TaskItem({
                 ) : (
                   <ChevronDown className="w-5 h-5 text-blue-500" />
                 )}
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteClick}
-                className="p-1 rounded hover:bg-red-100 dark:hover:bg-zinc-700 transition-colors"
-                aria-label={deleteTaskAriaLabel}
-              >
-                <Trash2 className="w-5 h-5 text-red-500" />
               </button>
             </div>
           </div>
