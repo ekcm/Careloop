@@ -65,6 +65,7 @@ export default function TaskItem({
   const noCommentsText = useT('No comments yet');
   const addCommentPlaceholder = useT('Add a comment...');
   const sendButtonText = useT('Send');
+  const byText = useT('By');
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -131,16 +132,20 @@ export default function TaskItem({
               {taskIconMap[icon]}
             </div>
             <div className="min-w-0 w-full text-xs">
-              <div className="flex items-center gap-2 text-muted-foreground my-1">
-                <span className="text-muted-foreground">By: {author_name}</span>
-                <p className="flex items-center gap-1">
-                  <CalendarDays className="w-3 h-3" />
-                  {format(date, 'dd MMM yyy')}
-                </p>
-                <p className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {time}
-                </p>
+              <div className="flex items-center justify-between text-muted-foreground my-1">
+                <span>
+                  {byText}: {author_name}
+                </span>
+                <div className="flex flex-row gap-2">
+                  <p className="flex items-center gap-1">
+                    <CalendarDays className="w-3 h-3" />
+                    {format(date, 'dd MMM yyy')}
+                  </p>
+                  <p className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {time}
+                  </p>
+                </div>
               </div>
 
               <p
