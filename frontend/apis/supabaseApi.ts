@@ -54,6 +54,7 @@ export interface NewCommentPayload {
   comment_content: string;
   todo_id: number;
   user_id: string;
+  author_name: string;
 }
 
 export interface Comment {
@@ -62,9 +63,7 @@ export interface Comment {
   comment_content: string;
   todo_id: string;
   user_id: string;
-  profile: {
-    display_name: string;
-  };
+  author_name: string;
 }
 
 // GROUP FUNCTIONS

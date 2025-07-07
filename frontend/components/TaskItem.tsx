@@ -20,6 +20,7 @@ import {
   addComment,
   getTodoComments,
 } from '@/apis/supabaseApi';
+import { get } from 'http';
 
 type TaskItemProps = {
   id: number;
@@ -96,6 +97,7 @@ export default function TaskItem({
       comment_content: newComment,
       todo_id: todo_id,
       user_id: user_id,
+      author_name: author_name,
     };
     await addComment(newCommentPayload);
 
@@ -141,14 +143,14 @@ export default function TaskItem({
                 </p>
               </div>
 
-              <p
+                <p
                 className={cn(
-                  'text-lg font-medium break-words',
+                  'text-base font-ms break-words',
                   completed && 'line-through text-muted-foreground'
                 )}
-              >
+                >
                 {useT(label)}
-              </p>
+                </p>
 
               {hasNotes && (
                 <div className="w-full border-t-1 pt-1 text-md">
@@ -158,7 +160,7 @@ export default function TaskItem({
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 space-between">
               <button
                 type="button"
                 onClick={handleDeleteClick}
@@ -191,9 +193,7 @@ export default function TaskItem({
                     <div key={comment.id} className="text-sm">
                       <div className="flex justify-between items-center">
                         <span className="font-semibold text-gray-800 dark:text-gray-100">
-                          {comment.profile.display_name
-                            ? comment.profile.display_name
-                            : '(Name not set)'}
+                          {comment.author_name || ''}
                           :
                         </span>
                         <span className="text-xs text-gray-500 dark:text-gray-400">
