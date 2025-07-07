@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Copy, ArrowLeftRight, Mic, Volume2 } from 'lucide-react';
+import { Copy, ArrowLeftRight, Mic, Volume2, Square } from 'lucide-react';
 
 export default function TranslatePage() {
   //   const [sourceText, setSourceText] = useState('');
@@ -17,13 +17,22 @@ export default function TranslatePage() {
   // Language toggle state
   const [isSwapped, setIsSwapped] = useState(false);
 
+  // Recording state
+  const [isRecording, setIsRecording] = useState(false);
+
   const handleLanguageToggle = () => {
     setIsSwapped(!isSwapped);
   };
 
   const handleVoiceButton = () => {
-    // Placeholder for future recording functionality
-    console.log('Voice button clicked');
+    setIsRecording(!isRecording);
+    if (isRecording) {
+      // Stop recording logic will go here
+      console.log('Stop recording');
+    } else {
+      // Start recording logic will go here
+      console.log('Start recording');
+    }
   };
 
   const handleSourceSpeaker = () => {
@@ -147,9 +156,13 @@ export default function TranslatePage() {
           {/* Voice Recording Button */}
           <button
             onClick={handleVoiceButton}
-            className="flex items-center justify-center w-16 h-16 bg-blue-500 hover:bg-blue-600 rounded-full shadow-lg transition-colors"
+            className={`flex items-center justify-center w-16 h-16 ${isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'} rounded-full shadow-lg transition-colors`}
           >
-            <Mic size={24} className="text-white" />
+            {isRecording ? (
+              <Square size={24} className="text-white" />
+            ) : (
+              <Mic size={24} className="text-white" />
+            )}
           </button>
         </div>
       </div>
