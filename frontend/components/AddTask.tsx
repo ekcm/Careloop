@@ -22,7 +22,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { NewTodo } from '@/apis/supabaseApi';
 import { useT } from '@/hooks/useTranslation';
-import { taskIconMap, autoFilledText } from '@/lib/typing';
+import { taskIconMap } from '@/lib/typing';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface AddTaskProps {
@@ -92,6 +92,24 @@ export default function AddTask({ onAdd }: AddTaskProps) {
     setOpen(false);
   };
 
+  const autoFilledText: Record<string, string> = {
+    medication: useT('Take medication'),
+    meal: useT('Prepare and eat a meal'),
+    bath: useT('Take a bath or shower'),
+    walk: useT('Go for a walk'),
+    rest: useT('Take a rest or nap'),
+    exercise: useT('Do some exercise'),
+    hydrate: useT('Drink water'),
+    wake_up: useT('Wake up'),
+    vitals_check: useT('Check vitals'),
+    checklist: useT('To-do'),
+    doctor_visit: useT('Visit the doctor'),
+    laundry: useT('Do the laundry'),
+    groceries: useT('Buy groceries'),
+    transport: useT('Arrange transportation'),
+    emergency: useT('Handle an emergency'),
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -106,14 +124,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
         <div className="space-y-4">
           <div>
             <p className="mb-1 text-sm font-medium">{iconText}</p>
-            <RadioGroup
-              value={icon}
-              onValueChange={(value) => {
-                setIcon(value);
-                setLabel(autoFilledText[value]);
-              }}
-              className="grid grid-cols-5 gap-3"
-            >
+            <RadioGroup value={icon} className="grid grid-cols-5 gap-3">
               {Object.entries(taskIconMap).map(([key]) => (
                 <RadioGroupItem
                   key={key}

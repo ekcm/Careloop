@@ -44,21 +44,3 @@ export const taskIconMap: Record<string, React.ReactNode> = {
   transport: <CarFront className="w-5 h-5 text-cyan-600" />,
   emergency: <AlertTriangle className="w-5 h-5 text-red-600" />,
 };
-
-export const autoFilledText: Record<string, string> = {
-  medication: 'Take medication',
-  meal: 'Prepare and eat a meal',
-  bath: 'Take a bath or shower',
-  walk: 'Go for a walk',
-  rest: 'Take a rest or nap',
-  exercise: 'Do some exercise',
-  hydrate: 'Drink water',
-  wake_up: 'Wake up',
-  vitals_check: 'Check vitals',
-  checklist: 'To-do',
-  doctor_visit: 'Visit the doctor',
-  laundry: 'Do the laundry',
-  groceries: 'Buy groceries',
-  transport: 'Arrange transportation',
-  emergency: 'Handle an emergency',
-};
