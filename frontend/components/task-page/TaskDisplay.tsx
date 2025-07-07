@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { Todo } from '@/apis/supabaseApi';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { useT } from '@/hooks/useTranslation';
 
 interface TaskDisplayProps {
   todaysTasks: Todo[];
@@ -14,8 +16,6 @@ interface TaskDisplayProps {
   pastTasksText: string;
 }
 
-type ActiveTab = 'today' | 'future' | 'past';
-
 export default function TaskDisplay({
   todaysTasks,
   futureTasks,
@@ -25,64 +25,65 @@ export default function TaskDisplay({
   futureTasksText,
   pastTasksText,
 }: TaskDisplayProps) {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('today');
-
-  const tabs = {
-    today: {
-      label: todaysTasksText,
-      count: todaysTasks.length,
-      content: renderTaskSection('', todaysTasks),
-    },
-    future: {
-      label: futureTasksText,
-      count: futureTasks.length,
-      content: renderTaskSection('', futureTasks),
-    },
-    past: {
-      label: pastTasksText,
-      count: pastTasks.length,
-      content: renderTaskSection('', pastTasks),
-    },
-  };
+  const todayText = useT('Today');
+  const futureText = useT('Future');
+  const pastText = useT('Past');
 
   return (
-    <div>
-      <div className="border-b border-gray-200 justify-items-center">
-        <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-          {Object.keys(tabs).map((tabKey) => {
-            const tab = tabs[tabKey as ActiveTab];
-            const isActive = activeTab === tabKey;
-            return (
-              <button
-                key={tab.label}
-                onClick={() => setActiveTab(tabKey as ActiveTab)}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200
-                  ${
-                    isActive
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }
-                `}
-              >
-                {tab.label} ({tab.count})
-              </button>
-            );
-          })}
-        </nav>
-      </div>
-      <div className="pt-5">
+    <Tabs defaultValue={todayText} className="w-full">
+      <TabsList className="w-full grid grid-cols-3">
+        <TabsTrigger value={todayText} className="w-full">
+          {todaysTasksText} ({todaysTasks.length})
+        </TabsTrigger>
+        <TabsTrigger value={futureText} className="w-full">
+          {futureTasksText} ({futureTasks.length})
+        </TabsTrigger>
+        <TabsTrigger value={pastText} className="w-full">
+          {pastTasksText} ({pastTasks.length})
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value={todayText}>
         <AnimatePresence mode="wait">
           <motion.div
-            key={activeTab}
+            key={todayText}
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -10, opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            {tabs[activeTab].content}
+            {renderTaskSection('', todaysTasks)}
           </motion.div>
         </AnimatePresence>
-      </div>
-    </div>
+      </TabsContent>
+
+      <TabsContent value={futureText}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={futureText}
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -10, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {renderTaskSection('', futureTasks)}
+          </motion.div>
+        </AnimatePresence>
+      </TabsContent>
+
+      <TabsContent value={pastText}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={pastText}
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -10, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {renderTaskSection('', pastTasks)}
+          </motion.div>
+        </AnimatePresence>
+      </TabsContent>
+    </Tabs>
   );
 }

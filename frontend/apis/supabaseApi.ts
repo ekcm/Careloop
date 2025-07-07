@@ -340,6 +340,8 @@ export const getTodoComments = async (todoId: string): Promise<Comment[]> => {
     throw error;
   }
 
+  // map through fetched comments and useT
+
   return data || [];
 };
 

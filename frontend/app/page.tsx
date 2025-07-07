@@ -188,7 +188,7 @@ export default function HomePage() {
 
   const renderTaskSection = (title: string, tasksList: Todo[]) => (
     <>
-      <h3 className="font-semibold mt-6 mb-3">{title}</h3>
+      <h3 className="font-semibold mt-3 mb-3">{title}</h3>
       <div className="space-y-3">
         <AnimatePresence>
           {tasksList.map((task) => (
@@ -284,15 +284,17 @@ export default function HomePage() {
 
       {error && <p className="text-red-500 my-2">{error}</p>}
 
-      <TaskDisplay
-        todaysTasks={todaysTasks}
-        futureTasks={futureTasks}
-        pastTasks={pastTasks}
-        renderTaskSection={renderTaskSection}
-        todaysTasksText={todaysTasksText}
-        futureTasksText={futureTasksText}
-        pastTasksText={pastTasksText}
-      />
+      <div className="mt-4">
+        <TaskDisplay
+          todaysTasks={todaysTasks}
+          futureTasks={futureTasks}
+          pastTasks={pastTasks}
+          renderTaskSection={renderTaskSection}
+          todaysTasksText={todaysTasksText}
+          futureTasksText={futureTasksText}
+          pastTasksText={pastTasksText}
+        />
+      </div>
     </div>
   );
 }

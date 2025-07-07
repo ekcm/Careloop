@@ -143,14 +143,14 @@ export default function TaskItem({
                 </p>
               </div>
 
-                <p
+              <p
                 className={cn(
                   'text-base font-ms break-words',
                   completed && 'line-through text-muted-foreground'
                 )}
-                >
+              >
                 {useT(label)}
-                </p>
+              </p>
 
               {hasNotes && (
                 <div className="w-full border-t-1 pt-1 text-md">
@@ -193,8 +193,7 @@ export default function TaskItem({
                     <div key={comment.id} className="text-sm">
                       <div className="flex justify-between items-center">
                         <span className="font-semibold text-gray-800 dark:text-gray-100">
-                          {comment.author_name || ''}
-                          :
+                          {comment.author_name || ''}:
                         </span>
                         <span className="text-xs text-gray-500 dark:text-gray-400">
                           {format(new Date(comment.created_at), 'dd MMM, p')}
