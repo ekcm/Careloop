@@ -16,8 +16,8 @@ import {
 } from '@/apis/supabaseApi';
 import { toast } from 'sonner';
 import { Loader2, Edit, Save, X, Users, Plus, LogIn } from 'lucide-react';
-
-// --- Helper Components for Cleaner UI ---
+import { ConfirmModal } from '@/components/ConfirmModal';
+import { useT } from '@/hooks/useTranslation';
 
 const InfoRow: FC<{ label: string; children: React.ReactNode }> = ({
   label,
@@ -54,8 +54,6 @@ const ActionButton: FC<{
   );
 };
 
-// --- Main User Page Component ---
-
 export const UserPage: FC<{
   session: Session;
   handleLogout: () => void;
@@ -73,6 +71,60 @@ export const UserPage: FC<{
   const [newGroupName, setNewGroupName] = useState('');
   const [joinGroupName, setJoinGroupName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmLeaveModal, setShowConfirmLeaveModal] = useState(false);
+  const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
+
+  // Translated Text
+  const myAccountText = useT('My Account');
+  const manageProfileText = useT('Manage your profile');
+  const emailLabelText = useT('Email');
+  const displayNameLabelText = useT('Display Name');
+  const displayNameNotSetText = useT('Not set');
+  const updateDisplayNameSuccessText = useT('Display name updated!');
+  const updateDisplayNameFailText = useT('Failed to update display name.');
+  const groupNameEmptyText = useT('Group name cannot be empty.');
+  const groupCreatedSuccessText = useT(
+    'Successfully created and joined "{name}"!'
+  );
+  const groupCreateFailText = useT('Failed to create group.');
+  const groupIdEmptyText = useT('Group ID cannot be empty.');
+  const groupJoinedSuccessText = useT('Successfully joined group!');
+  const groupJoinFailText = useT(
+    'Failed to join group. Please check the ID and try again.'
+  );
+  const leaveGroupFailText = useT('Failed to leave the group.');
+  const deleteGroupFailText = useT('Failed to delete the group.');
+  const myGroupHeaderText = useT('My Group');
+  const manageGroupSettingsText = useT('Manage your group settings');
+  const groupNameLabelText = useT('Group Name');
+  const myRoleLabelText = useT('My Role');
+  const adminRoleText = useT('Admin 👑');
+  const memberRoleText = useT('Member');
+  const membersLabelText = useT('Members');
+  const newMemberText = useT('New Member');
+  const deleteGroupButtonText = useT('Delete Group');
+  const leaveGroupButtonText = useT('Leave Group');
+  const createNewGroupHeaderText = useT('Create a New Group');
+  const joinExistingGroupHeaderText = useT('Join an Existing Group');
+  const enterGroupNamePlaceholderText = useT('Enter group name');
+  const pasteGroupNamePlaceholderText = useT('Paste group name');
+  const createButtonText = useT('Create');
+  const joinButtonText = useT('Join');
+  const cancelButtonText = useT('Cancel');
+  const noGroupFoundHeaderText = useT('No Group Found');
+  const noGroupFoundSubText = useT('You are not part of a group yet.');
+  const createGroupActionText = useT('Create Group');
+  const joinGroupActionText = useT('Join Group');
+  const loggingOutText = useT('Logging out...');
+  const logoutText = useT('Log Out');
+  const leaveGroupModalTitle = useT('Leave Group');
+  const leaveGroupModalMessage = useT(
+    'Are you sure you want to leave this group?'
+  );
+  const deleteGroupModalTitle = useT('Delete Group');
+  const deleteGroupModalMessage = useT(
+    'Are you sure you want to DELETE this group for everyone? This action cannot be undone.'
+  );
 
   const fetchGroupData = useCallback(async () => {
     setIsLoadingGroupInfo(true);
@@ -107,90 +159,77 @@ export const UserPage: FC<{
         data: { display_name: displayName },
       });
       if (error) throw error;
-      toast.success('Display name updated!');
+      toast.success(updateDisplayNameSuccessText);
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating display name:', error);
-      toast.error('Failed to update display name.');
+      toast.error(updateDisplayNameFailText);
     } finally {
       setIsUpdating(false);
     }
   };
 
   const handleCreateGroup = async () => {
-    if (!newGroupName.trim()) {
-      toast.error('Group name cannot be empty.');
-      return;
-    }
+    if (!newGroupName.trim()) return toast.error(groupNameEmptyText);
     setIsSubmitting(true);
     try {
-      console.log(newGroupName, session.user.id);
       const newGroup = await createGroup(newGroupName, session.user.id);
       await joinGroupByName(session.user.id, newGroup.name);
       await fetchGroupData();
       setView('idle');
       setNewGroupName('');
-      toast.success(`Successfully created and joined "${newGroup.name}"!`);
+      toast.success(groupCreatedSuccessText.replace('{name}', newGroup.name));
     } catch (error) {
       console.error('Failed to create group:', error);
-      toast.error('Failed to create group.');
+      toast.error(groupCreateFailText);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleJoinGroup = async () => {
-    if (!joinGroupName.trim()) {
-      toast.error('Group ID cannot be empty.');
-      return;
-    }
+    if (!joinGroupName.trim()) return toast.error(groupIdEmptyText);
     setIsSubmitting(true);
     try {
       await joinGroupByName(session.user.id, joinGroupName);
       await fetchGroupData();
       setView('idle');
       setJoinGroupName('');
-      toast.success(`Successfully joined group!`);
+      toast.success(groupJoinedSuccessText);
     } catch (error) {
       console.error('Failed to join group:', error);
-      toast.error('Failed to join group. Please check the ID and try again.');
+      toast.error(groupJoinFailText);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleLeaveGroup = async () => {
-    if (confirm('Are you sure you want to leave this group?')) {
-      setIsSubmitting(true);
-      try {
-        await leaveOrBeKickedFromGroup(session.user.id);
-        await fetchGroupData();
-      } catch (error) {
-        console.error('Failed to leave group:', error);
-        toast.error('Failed to leave the group.');
-      } finally {
-        setIsSubmitting(false);
-      }
+    setIsSubmitting(true);
+    try {
+      await leaveOrBeKickedFromGroup(session.user.id);
+      await fetchGroupData();
+    } catch (error) {
+      console.error('Failed to leave group:', error);
+      toast.error(leaveGroupFailText);
+    } finally {
+      setIsSubmitting(false);
+      setShowConfirmLeaveModal(false);
     }
   };
 
   const handleDeleteGroup = async () => {
-    if (
-      confirm(
-        'Are you sure you want to DELETE this group for everyone? This action cannot be undone.'
-      )
-    ) {
-      if (!group) return;
-      setIsSubmitting(true);
-      try {
-        await deleteGroup(group.id);
-        await fetchGroupData();
-      } catch (error) {
-        console.error('Failed to delete group:', error);
-        toast.error('Failed to delete the group.');
-      } finally {
-        setIsSubmitting(false);
-      }
+    if (!group) return;
+    setIsSubmitting(true);
+    try {
+      await deleteGroup(group.id);
+      await fetchGroupData();
+    } catch (error) {
+      console.error('Failed to delete group:', error);
+      toast.error(deleteGroupFailText);
+    } finally {
+      setIsSubmitting(false);
+      setShowConfirmDeleteModal(false);
     }
   };
 
@@ -208,31 +247,43 @@ export const UserPage: FC<{
       const isAdmin = session.user.id === group.admin_id;
       return (
         <div className="pt-4 border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-900">My Group</h3>
+          <h3 className="text-lg font-semibold text-slate-900">
+            {myGroupHeaderText}
+          </h3>
           <p className="text-sm text-slate-500 mt-1 mb-4">
-            Manage your group settings
+            {manageGroupSettingsText}
           </p>
-          <InfoRow label="Group Name">{group.name}</InfoRow>
-          <InfoRow label="My Role">{isAdmin ? 'Admin 👑' : 'Member'}</InfoRow>
+          <InfoRow label={groupNameLabelText}>{group.name}</InfoRow>
+          <InfoRow label={myRoleLabelText}>
+            {isAdmin ? adminRoleText : memberRoleText}
+          </InfoRow>
           <div>
             <p className="text-sm text-slate-500 my-2">
-              Members ({members.length})
+              {membersLabelText} ({members.length})
             </p>
             <ul className="space-y-1 text-sm text-slate-700">
               {members.map((member) => (
                 <li key={member.id} className="pl-4">
-                  {member.display_name || 'New Member'}
+                  {member.display_name || newMemberText}
                 </li>
               ))}
             </ul>
           </div>
           <div className="pt-8">
             <ActionButton
-              onClick={isAdmin ? handleDeleteGroup : handleLeaveGroup}
+              onClick={() =>
+                isAdmin
+                  ? setShowConfirmDeleteModal(true)
+                  : setShowConfirmLeaveModal(true)
+              }
               disabled={isSubmitting}
               variant="destructive"
             >
-              {isSubmitting ? '...' : isAdmin ? 'Delete Group' : 'Leave Group'}
+              {isSubmitting
+                ? '...'
+                : isAdmin
+                  ? deleteGroupButtonText
+                  : leaveGroupButtonText}
             </ActionButton>
           </div>
         </div>
@@ -244,8 +295,8 @@ export const UserPage: FC<{
         <div className="pt-4 mt-4 border-t border-slate-200 space-y-4">
           <h3 className="font-semibold text-slate-900">
             {view === 'create'
-              ? 'Create a New Group'
-              : 'Join an Existing Group'}
+              ? createNewGroupHeaderText
+              : joinExistingGroupHeaderText}
           </h3>
           <div className="flex gap-2">
             <input
@@ -257,7 +308,9 @@ export const UserPage: FC<{
                   : setJoinGroupName(e.target.value)
               }
               placeholder={
-                view === 'create' ? 'Enter group name' : 'Paste group name'
+                view === 'create'
+                  ? enterGroupNamePlaceholderText
+                  : pasteGroupNamePlaceholderText
               }
               className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -269,9 +322,9 @@ export const UserPage: FC<{
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : view === 'create' ? (
-                'Create'
+                createButtonText
               ) : (
-                'Join'
+                joinButtonText
               )}
             </ActionButton>
           </div>
@@ -279,7 +332,7 @@ export const UserPage: FC<{
             onClick={() => setView('idle')}
             className="text-xs text-slate-500 hover:underline"
           >
-            Cancel
+            {cancelButtonText}
           </button>
         </div>
       );
@@ -289,17 +342,15 @@ export const UserPage: FC<{
       <div className="text-center pt-6 mt-6 border-t border-dashed">
         <Users className="mx-auto h-12 w-12 text-slate-300" />
         <h3 className="mt-2 text-sm font-semibold text-slate-800">
-          No Group Found
+          {noGroupFoundHeaderText}
         </h3>
-        <p className="mt-1 text-sm text-slate-500">
-          You are not part of a group yet.
-        </p>
+        <p className="mt-1 text-sm text-slate-500">{noGroupFoundSubText}</p>
         <div className="mt-4 flex justify-center gap-3">
           <ActionButton onClick={() => setView('create')} variant="primary">
-            <Plus className="-ml-1 mr-2 h-4 w-full" /> Create Group
+            <Plus className="-ml-1 mr-2 h-4 w-full" /> {createGroupActionText}
           </ActionButton>
           <ActionButton onClick={() => setView('join')} variant="secondary">
-            <LogIn className="-ml-1 mr-2 h-4 w-full" /> Join Group
+            <LogIn className="-ml-1 mr-2 h-4 w-full" /> {joinGroupActionText}
           </ActionButton>
         </div>
       </div>
@@ -310,14 +361,14 @@ export const UserPage: FC<{
     <div className="w-full min-h-screen flex items-center justify-center bg-slate-50 p-4">
       <div className="w-full max-w-lg bg-white rounded-xl shadow-md border border-slate-200">
         <div className="p-6">
-          <h2 className="text-xl font-bold text-slate-900">My Account</h2>
-          <p className="text-sm text-slate-500 mt-1">Manage your profile</p>
+          <h2 className="text-xl font-bold text-slate-900">{myAccountText}</h2>
+          <p className="text-sm text-slate-500 mt-1">{manageProfileText}</p>
         </div>
         <div className="px-6 pb-6 space-y-2">
-          <InfoRow label="Email">
+          <InfoRow label={emailLabelText}>
             <span>{session.user.email}</span>
           </InfoRow>
-          <InfoRow label="Display Name">
+          <InfoRow label={displayNameLabelText}>
             {isEditing ? (
               <div className="flex items-center gap-2">
                 <input
@@ -347,7 +398,7 @@ export const UserPage: FC<{
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <span>{displayName || 'Not set'}</span>
+                <span>{displayName || displayNameNotSetText}</span>
                 <button
                   onClick={() => setIsEditing(true)}
                   className="p-1 text-slate-500 hover:text-slate-900"
@@ -365,10 +416,24 @@ export const UserPage: FC<{
             disabled={loading}
             className="text-sm font-medium mx-auto text-slate-600 hover:text-slate-900 disabled:opacity-50"
           >
-            {loading ? 'Logging out...' : 'Log Out'}
+            {loading ? loggingOutText : logoutText}
           </button>
         </div>
       </div>
+      <ConfirmModal
+        open={showConfirmLeaveModal}
+        title={leaveGroupModalTitle}
+        message={leaveGroupModalMessage}
+        onConfirm={handleLeaveGroup}
+        onCancel={() => setShowConfirmLeaveModal(false)}
+      />
+      <ConfirmModal
+        open={showConfirmDeleteModal}
+        title={deleteGroupModalTitle}
+        message={deleteGroupModalMessage}
+        onConfirm={handleDeleteGroup}
+        onCancel={() => setShowConfirmDeleteModal(false)}
+      />
     </div>
   );
 };
