@@ -358,7 +358,7 @@ export const UserPage: FC<{
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-slate-50 p-4">
+    <div className="w-full flex justify-center p-4">
       <div className="w-full max-w-lg bg-white rounded-xl shadow-md border border-slate-200">
         <div className="p-6">
           <h2 className="text-xl font-bold text-slate-900">{myAccountText}</h2>
