@@ -32,23 +32,11 @@ export default function TranslatePage() {
   };
 
   return (
-    <div className="w-full h-screen flex flex-col p-4 bg-gray-50">
-      {/* Header */}
-      {/* <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800">Translate</h1>
-        <button
-          onClick={handleClear}
-          className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-        >
-          <X size={16} />
-          <span className="text-sm">Clear</span>
-        </button>
-      </div> */}
-
+    <div className="p-4 pb-20">
       {/* Main Translation Area */}
-      <div className="flex-1 flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         {/* Source Text Area (English) */}
-        <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between p-3 border-b border-gray-100">
             <span className="text-sm font-medium text-gray-700">English</span>
             <button
@@ -70,7 +58,7 @@ export default function TranslatePage() {
         </div>
 
         {/* Target Text Area (Burmese) */}
-        <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between p-3 border-b border-gray-100">
             <span className="text-sm font-medium text-gray-700">
               မြန်မာဘာသာ
