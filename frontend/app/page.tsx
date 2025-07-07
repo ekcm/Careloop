@@ -22,6 +22,7 @@ import TaskItem from '@/components/TaskItem';
 import AddTask from '@/components/AddTask';
 import { Session } from '@supabase/supabase-js';
 import { useT } from '@/hooks/useTranslation';
+import TaskDisplay from '@/components/task-page/TaskDisplay';
 
 const getTodayString = () => new Date().toISOString().split('T')[0];
 
@@ -44,9 +45,9 @@ export default function HomePage() {
     'Please go to your account page to join or create a group.'
   );
   const goToAccountLinkText = useT('Go to Account');
-  const todaysTasksText = useT("Today's Tasks");
-  const futureTasksText = useT('Future Tasks');
-  const pastTasksText = useT('Past Tasks');
+  const todaysTasksText = useT('Today');
+  const futureTasksText = useT('Upcoming');
+  const pastTasksText = useT('Past');
   const failedLoadText = useT('Failed to load tasks. Please try again.');
   const failedUpdateText = useT('Failed to update task.');
   const failedAddText = useT('Failed to add task.');
@@ -277,16 +278,21 @@ export default function HomePage() {
       <Header />
       <ProgressBar tasks={todaysTasks} />
       <div className="flex justify-between items-center">
-        <h3 className="font-semibold">{todaysTasksText}</h3>
+        <h3 className="font-semibold">Your Tasks</h3>
         <AddTask onAdd={handleAddTask} />
       </div>
 
       {error && <p className="text-red-500 my-2">{error}</p>}
 
-      {todaysTasks.length > 0 && renderTaskSection('', todaysTasks)}
-      {futureTasks.length > 0 &&
-        renderTaskSection(futureTasksText, futureTasks)}
-      {pastTasks.length > 0 && renderTaskSection(pastTasksText, pastTasks)}
+      <TaskDisplay
+        todaysTasks={todaysTasks}
+        futureTasks={futureTasks}
+        pastTasks={pastTasks}
+        renderTaskSection={renderTaskSection}
+        todaysTasksText={todaysTasksText}
+        futureTasksText={futureTasksText}
+        pastTasksText={pastTasksText}
+      />
     </div>
   );
 }
