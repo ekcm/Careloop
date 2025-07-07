@@ -1,20 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { Copy, X } from 'lucide-react';
+import { Copy } from 'lucide-react';
 
 export default function TranslatePage() {
-//   const [sourceText, setSourceText] = useState('');
-//   const [translatedText, setTranslatedText] = useState('');
+  //   const [sourceText, setSourceText] = useState('');
+  //   const [translatedText, setTranslatedText] = useState('');
 
   // hard code the sourceText and translatedText first
-  const [sourceText, setSourceText] = useState('Can you bring me a glass of water?');
-  const [translatedText, setTranslatedText] = useState('သောက်သုံးရန်ရေတစ်ခွက် ယူပေးနိုင်မလား?');
+  const [sourceText, setSourceText] = useState(
+    'Can you bring me a glass of water?'
+  );
+  // set translatedText later
+  const [translatedText] = useState('သောက်သုံးရန်ရေတစ်ခွက် ယူပေးနိုင်မလား?');
 
-  const handleClear = () => {
-    setSourceText('');
-    setTranslatedText('');
-  };
+  //   const handleClear = () => {
+  //     setSourceText('');
+  //     setTranslatedText('');
+  //   };
 
   const handleCopySource = async () => {
     if (sourceText) {
