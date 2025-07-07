@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Copy } from 'lucide-react';
+import { Copy, ArrowLeftRight, Mic, Volume2 } from 'lucide-react';
 
 export default function TranslatePage() {
   //   const [sourceText, setSourceText] = useState('');
@@ -13,6 +13,28 @@ export default function TranslatePage() {
   );
   // set translatedText later
   const [translatedText] = useState('သောက်သုံးရန်ရေတစ်ခွက် ယူပေးနိုင်မလား?');
+
+  // Language toggle state
+  const [isSwapped, setIsSwapped] = useState(false);
+
+  const handleLanguageToggle = () => {
+    setIsSwapped(!isSwapped);
+  };
+
+  const handleVoiceButton = () => {
+    // Placeholder for future recording functionality
+    console.log('Voice button clicked');
+  };
+
+  const handleSourceSpeaker = () => {
+    // Placeholder for source text-to-speech
+    console.log('Source speaker clicked');
+  };
+
+  const handleTargetSpeaker = () => {
+    // Placeholder for target text-to-speech
+    console.log('Target speaker clicked');
+  };
 
   //   const handleClear = () => {
   //     setSourceText('');
@@ -35,33 +57,43 @@ export default function TranslatePage() {
     <div className="p-4 pb-20">
       {/* Main Translation Area */}
       <div className="flex flex-col gap-4">
-        {/* Source Text Area (English) */}
+        {/* Source Text Area */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between p-3 border-b border-gray-100">
-            <span className="text-sm font-medium text-gray-700">English</span>
+            <span className="text-sm font-medium text-gray-700">
+              {isSwapped ? 'မြန်မာဘာသာ' : 'English'}
+            </span>
             <button
               onClick={handleCopySource}
               disabled={!sourceText}
               className="flex items-center gap-1 px-2 py-1 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Copy size={14} />
-              <span className="text-xs">Copy</span>
+              {/* <span className="text-xs">Copy</span> */}
             </button>
           </div>
-          <textarea
-            value={sourceText}
-            onChange={(e) => setSourceText(e.target.value)}
-            placeholder="Enter text to translate..."
-            className="w-full h-full p-4 resize-none border-0 focus:ring-0 focus:outline-none text-gray-800 placeholder-gray-400"
-            style={{ minHeight: '200px' }}
-          />
+          <div className="relative">
+            <textarea
+              value={sourceText}
+              onChange={(e) => setSourceText(e.target.value)}
+              placeholder="Enter text to translate..."
+              className="w-full h-full p-4 pr-12 resize-none border-0 focus:ring-0 focus:outline-none text-gray-800 placeholder-gray-400"
+              style={{ minHeight: '160px' }}
+            />
+            <button
+              onClick={handleSourceSpeaker}
+              className="absolute bottom-3 right-3 p-2 text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <Volume2 size={16} />
+            </button>
+          </div>
         </div>
 
-        {/* Target Text Area (Burmese) */}
+        {/* Target Text Area */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between p-3 border-b border-gray-100">
             <span className="text-sm font-medium text-gray-700">
-              မြန်မာဘာသာ
+              {isSwapped ? 'English' : 'မြန်မာဘာသာ'}
             </span>
             <button
               onClick={handleCopyTranslated}
@@ -69,21 +101,56 @@ export default function TranslatePage() {
               className="flex items-center gap-1 px-2 py-1 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Copy size={14} />
-              <span className="text-xs">Copy</span>
+              {/* <span className="text-xs">Copy</span> */}
             </button>
           </div>
-          <div
-            className="w-full h-full p-4 text-gray-800"
-            style={{ minHeight: '200px' }}
-          >
-            {translatedText ? (
-              <div className="whitespace-pre-wrap">{translatedText}</div>
-            ) : (
-              <div className="text-gray-400 italic">
-                Translation will appear here...
-              </div>
-            )}
+          <div className="relative">
+            <div
+              className="w-full h-full p-4 pr-12 text-gray-800"
+              style={{ minHeight: '160px' }}
+            >
+              {translatedText ? (
+                <div className="whitespace-pre-wrap">{translatedText}</div>
+              ) : (
+                <div className="text-gray-400 italic">
+                  Translation will appear here...
+                </div>
+              )}
+            </div>
+            <button
+              onClick={handleTargetSpeaker}
+              className="absolute bottom-3 right-3 p-2 text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <Volume2 size={16} />
+            </button>
           </div>
+        </div>
+
+        {/* Language Toggle Switch */}
+        <div className="flex items-center justify-center py-1">
+          <button
+            onClick={handleLanguageToggle}
+            className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors"
+          >
+            <span className="text-sm font-medium text-gray-700">
+              {isSwapped ? 'English' : 'မြန်မာဘာသာ'}
+            </span>
+            <ArrowLeftRight size={16} className="text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">
+              {isSwapped ? 'မြန်မာဘာသာ' : 'English'}
+            </span>
+          </button>
+        </div>
+
+        {/* Voice Control Container */}
+        <div className="flex flex-col items-center gap-4">
+          {/* Voice Recording Button */}
+          <button
+            onClick={handleVoiceButton}
+            className="flex items-center justify-center w-16 h-16 bg-blue-500 hover:bg-blue-600 rounded-full shadow-lg transition-colors"
+          >
+            <Mic size={24} className="text-white" />
+          </button>
         </div>
       </div>
     </div>
