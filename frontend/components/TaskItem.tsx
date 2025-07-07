@@ -20,7 +20,6 @@ import {
   addComment,
   getTodoComments,
 } from '@/apis/supabaseApi';
-import { get } from 'http';
 
 type TaskItemProps = {
   id: number;
