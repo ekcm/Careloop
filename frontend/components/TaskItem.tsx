@@ -10,8 +10,8 @@ import {
   Square,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
-import { useT } from '@/hooks/useTranslation';
+import { useEffect, useState, useMemo } from 'react';
+import { useT, useTranslations } from '@/hooks/useTranslation';
 import { taskIconMap } from '@/lib/typing';
 import { format } from 'date-fns';
 import {
@@ -77,6 +77,13 @@ export default function TaskItem({
   };
 
   const [newComment, setNewComment] = useState('');
+
+  // Memoize comment contents to avoid infinite loop in useTranslations
+  const commentContents = useMemo(
+    () => comments.map((comment) => comment.comment_content),
+    [comments]
+  );
+  const translatedComments = useTranslations(commentContents);
 
   // --- useEffect to fetch comments ---
   useEffect(() => {
@@ -193,7 +200,7 @@ export default function TaskItem({
             <div className="w-full border-t-1 p-2">
               <div className="space-y-3">
                 {comments.length > 0 ? (
-                  comments.map((comment) => (
+                  comments.map((comment, idx) => (
                     <div key={comment.id} className="text-sm">
                       <div className="flex justify-between items-center">
                         <span className="font-semibold text-gray-800 dark:text-gray-100">
@@ -204,7 +211,8 @@ export default function TaskItem({
                         </span>
                       </div>
                       <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap mt-1">
-                        {comment.comment_content}
+                        {translatedComments[idx]?.translatedText ??
+                          comment.comment_content}
                       </p>
                     </div>
                   ))
