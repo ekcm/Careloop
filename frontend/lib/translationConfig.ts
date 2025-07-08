@@ -4,7 +4,7 @@
  * You can modify these settings to control translation behavior:
  * 1. Set USE_REAL_TRANSLATION to true to enable OpenAI translations
  * 2. Set your OpenAI API key in .env.local as OPENAI_API_KEY=your-key
- * 3. Adjust batch settings for performance tuning
+ * 3. Adjust settings for performance tuning
  */
 
 export const TRANSLATION_CONFIG = {
@@ -13,10 +13,6 @@ export const TRANSLATION_CONFIG = {
   //   * FOR DEVELOPMENT (Mock translations):
   //   * - Keep USE_REAL_TRANSLATION: false
   //   * - Translations will show as [ZH] Welcome, [TA] Welcome, etc.
-
-  // Batch processing settings
-  BATCH_DELAY_MS: 500, // Wait time before processing batch
-  MAX_BATCH_SIZE: -1, // -1 = no limit, process all texts together
 
   // OpenAI settings
   MODEL: 'gpt-4.1-nano-2025-04-14', // Cost-effective model

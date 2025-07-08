@@ -6,16 +6,8 @@ interface TranslationItem {
   languageCode?: string; // Track which language this translation is for
 }
 
-interface TranslationBatch {
-  texts: string[];
-  ids: string[];
-  targetLanguage: string;
-}
-
 interface TranslationConfig {
   USE_REAL_TRANSLATION: boolean;
-  BATCH_DELAY_MS: number;
-  MAX_BATCH_SIZE: number;
   MODEL: string;
   MAX_RETRIES: number;
   TIMEOUT_MS: number;
@@ -25,8 +17,6 @@ interface TranslationConfig {
 
 class TranslationService {
   private translations = new Map<string, TranslationItem>();
-  private pendingBatch: TranslationBatch | null = null;
-  private batchTimeout: NodeJS.Timeout | null = null;
   private config: TranslationConfig | null = null; // Will be loaded dynamically
 
   // Register text for translation and return a unique ID
@@ -50,7 +40,7 @@ class TranslationService {
     return `${textId}_${languageCode}`;
   }
 
-  // Add text to pending batch for translation
+  // Translate text immediately (async processing)
   async queueForTranslation(id: string, targetLanguage: string) {
     const item = this.translations.get(id);
     if (!item) return;
@@ -60,7 +50,7 @@ class TranslationService {
     const existingTranslation = this.translations.get(compositeKey);
 
     if (existingTranslation && existingTranslation.translatedText) {
-      // We already have this translation, no need to queue
+      // We already have this translation, no need to translate
       if (this.config?.ENABLE_LOGGING) {
         console.log(
           `Cache hit for "${item.originalText}" -> "${existingTranslation.translatedText}" (${targetLanguage})`
@@ -69,28 +59,18 @@ class TranslationService {
       return;
     }
 
+    // Skip empty or whitespace-only text
+    if (!item.originalText.trim()) {
+      if (this.config?.ENABLE_LOGGING) {
+        console.log(`Skipping empty text for translation`);
+      }
+      return;
+    }
+
     // Mark as translating
     item.isTranslating = true;
     this.translations.set(id, item);
-
-    // Initialize or update pending batch
-    if (
-      !this.pendingBatch ||
-      this.pendingBatch.targetLanguage !== targetLanguage
-    ) {
-      this.pendingBatch = {
-        texts: [],
-        ids: [],
-        targetLanguage,
-      };
-    }
-
-    // Add to batch if not already included
-    // Double-check that pendingBatch is still valid
-    if (this.pendingBatch && !this.pendingBatch.ids.includes(id)) {
-      this.pendingBatch.texts.push(item.originalText);
-      this.pendingBatch.ids.push(id);
-    }
+    this.notifySubscribers();
 
     // Load config if not already loaded
     if (!this.config) {
@@ -98,16 +78,46 @@ class TranslationService {
       this.config = TRANSLATION_CONFIG;
     }
 
-    // Process batch if full or set timeout
-    if (
-      this.pendingBatch &&
-      this.config &&
-      (this.config.MAX_BATCH_SIZE === -1 ||
-        this.pendingBatch.texts.length >= this.config.MAX_BATCH_SIZE)
-    ) {
-      this.processBatch();
-    } else if (this.pendingBatch) {
-      this.scheduleBatchProcessing();
+    try {
+      if (this.config?.ENABLE_LOGGING) {
+        console.log(`Translating "${item.originalText}" to ${targetLanguage}`);
+      }
+
+      // Translate immediately (no batching)
+      const translatedText = await this.translateText(
+        item.originalText,
+        targetLanguage
+      );
+
+      // Store the translation with composite key for caching
+      const compositeKey = this.getCompositeKey(id, targetLanguage);
+      this.translations.set(compositeKey, {
+        id: compositeKey,
+        originalText: item.originalText,
+        translatedText,
+        isTranslating: false,
+        languageCode: targetLanguage,
+      });
+
+      // Also update the original item for backward compatibility
+      item.translatedText = translatedText;
+      item.isTranslating = false;
+      this.translations.set(id, item);
+
+      if (this.config?.ENABLE_LOGGING) {
+        console.log(
+          `Translation complete: "${item.originalText}" -> "${translatedText}"`
+        );
+      }
+
+      this.notifySubscribers();
+    } catch (error) {
+      console.error(`Translation failed for "${item.originalText}":`, error);
+
+      // Reset translation state on error
+      item.isTranslating = false;
+      this.translations.set(id, item);
+      this.notifySubscribers();
     }
   }
 
@@ -134,116 +144,20 @@ class TranslationService {
     return Array.from(this.translations.values());
   }
 
-  // Schedule batch processing with debounce
-  private async scheduleBatchProcessing() {
-    if (this.batchTimeout) {
-      clearTimeout(this.batchTimeout);
-    }
-
-    // Load config if not already loaded
-    if (!this.config) {
-      const { TRANSLATION_CONFIG } = await import('./translationConfig');
-      this.config = TRANSLATION_CONFIG;
-    }
-
-    this.batchTimeout = setTimeout(() => {
-      this.processBatch();
-    }, this.config.BATCH_DELAY_MS);
-  }
-
-  // Process the current batch
-  private async processBatch() {
-    if (!this.pendingBatch || this.pendingBatch.texts.length === 0) return;
-
-    const batch = { ...this.pendingBatch };
-    this.pendingBatch = null;
-
-    if (this.batchTimeout) {
-      clearTimeout(this.batchTimeout);
-      this.batchTimeout = null;
-    }
-
-    try {
-      // Load config if not already loaded
-      if (!this.config) {
-        const { TRANSLATION_CONFIG } = await import('./translationConfig');
-        this.config = TRANSLATION_CONFIG;
-      }
-
-      const translations = await this.translateBatch(
-        batch.texts,
-        batch.targetLanguage
-      );
-
-      // Update translations
-      batch.ids.forEach((id, index) => {
-        const item = this.translations.get(id);
-        if (item) {
-          const translatedText = translations[index] || item.originalText;
-
-          // Store the translation with composite key for caching
-          const compositeKey = this.getCompositeKey(id, batch.targetLanguage);
-          this.translations.set(compositeKey, {
-            id: compositeKey,
-            originalText: item.originalText,
-            translatedText,
-            isTranslating: false,
-            languageCode: batch.targetLanguage,
-          });
-
-          // Also update the original item for backward compatibility
-          item.translatedText = translatedText;
-          item.isTranslating = false;
-          this.translations.set(id, item);
-        }
-      });
-
-      // Notify subscribers about updates
-      if (this.config?.ENABLE_LOGGING) {
-        console.log(
-          `Updated translations:`,
-          batch.ids.map((id) => {
-            const item = this.translations.get(id);
-            return `${item?.originalText} -> ${item?.translatedText}`;
-          })
-        );
-        console.log(
-          `Notifying ${this.subscribers.size} subscribers of translation updates`
-        );
-      }
-      this.notifySubscribers();
-    } catch (error) {
-      console.error('Translation batch failed:', error);
-
-      // Reset translation states on error
-      batch.ids.forEach((id) => {
-        const item = this.translations.get(id);
-        if (item) {
-          item.isTranslating = false;
-          this.translations.set(id, item);
-        }
-      });
-
-      this.notifySubscribers();
-    }
-  }
-
-  // Real OpenAI translation implementation
-  private async translateBatch(
-    texts: string[],
+  // Translate single text immediately
+  private async translateText(
+    text: string,
     targetLanguage: string
-  ): Promise<string[]> {
+  ): Promise<string> {
     // Import config to check if real translation is enabled
     const { TRANSLATION_CONFIG } = await import('./translationConfig');
 
     if (!TRANSLATION_CONFIG?.USE_REAL_TRANSLATION) {
       // Fallback to mock for development
       if (TRANSLATION_CONFIG?.ENABLE_LOGGING) {
-        console.log(
-          `Mock translating ${texts.length} texts to ${targetLanguage}`
-        );
+        console.log(`Mock translating "${text}" to ${targetLanguage}`);
       }
-      return texts.map((text) => `[${targetLanguage.toUpperCase()}] ${text}`);
+      return `[${targetLanguage.toUpperCase()}] ${text}`;
     }
 
     try {
@@ -252,15 +166,20 @@ class TranslationService {
 
       if (TRANSLATION_CONFIG?.ENABLE_LOGGING) {
         console.log(
-          `Real translating ${texts.length} texts to ${targetLanguage} via OpenAI`
+          `Real translating "${text}" to ${targetLanguage} via OpenAI`
         );
       }
 
-      return await openaiService.translateBatch(texts, targetLanguage);
+      // Use the single text translation method
+      const translations = await openaiService.translateBatch(
+        [text],
+        targetLanguage
+      );
+      return translations[0] || text;
     } catch (error) {
       console.error('OpenAI translation failed, falling back to mock:', error);
       // Fallback to mock on any error
-      return texts.map((text) => `[${targetLanguage.toUpperCase()}] ${text}`);
+      return `[${targetLanguage.toUpperCase()}] ${text}`;
     }
   }
 
@@ -292,11 +211,6 @@ class TranslationService {
   // Clear all translations (useful for testing/reset)
   clear() {
     this.translations.clear();
-    this.pendingBatch = null;
-    if (this.batchTimeout) {
-      clearTimeout(this.batchTimeout);
-      this.batchTimeout = null;
-    }
   }
 }
 
