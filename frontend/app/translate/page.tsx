@@ -6,11 +6,16 @@ import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { transcribeAudio, validateAudioFile } from '@/lib/elevenlabsService';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { LANGUAGES } from '@/lib/languageConfig';
+import { translationService } from '@/lib/translationService';
 
 export default function TranslatePage() {
   const [sourceText, setSourceText] = useState('');
-  // set translatedText later
-  const [translatedText] = useState('');
+  const [translatedText, setTranslatedText] = useState('');
+
+  const [sourceLanguage, setSourceLanguage] = useState(LANGUAGES[0]);
+  const [targetLanguage, setTargetLanguage] = useState(
+    LANGUAGES[1] ?? LANGUAGES[0]
+  );
 
   // Audio recording hook
   const {
@@ -29,6 +34,7 @@ export default function TranslatePage() {
   const [processedAudioBlob, setProcessedAudioBlob] = useState<Blob | null>(
     null
   );
+  const [translationError, setTranslationError] = useState<string | null>(null);
 
   // Handle transcription when audio is recorded
   useEffect(() => {
@@ -36,6 +42,7 @@ export default function TranslatePage() {
       if (audioBlob && audioBlob !== processedAudioBlob) {
         setProcessedAudioBlob(audioBlob);
         setTranscriptionError(null);
+        setTranslationError(null);
 
         try {
           // Validate audio file
@@ -53,6 +60,25 @@ export default function TranslatePage() {
             console.log('Transcription result:', result.text);
             // Update source text with transcribed text
             setSourceText(result.text);
+            // Translate the transcribed text
+            try {
+              const id = translationService.registerText(result.text);
+              await translationService.queueForTranslation(
+                id,
+                targetLanguage.code
+              );
+              const translationItem = translationService.getTranslation(
+                id,
+                targetLanguage.code
+              );
+              setTranslatedText(translationItem?.translatedText || '');
+            } catch (err) {
+              console.error('Translation error:', err);
+              setTranslationError(
+                'Failed to translate text. Please try again.'
+              );
+              setTranslatedText('');
+            }
           }
         } catch (error) {
           console.error('Transcription error:', error);
@@ -64,7 +90,7 @@ export default function TranslatePage() {
     };
 
     handleTranscription();
-  }, [audioBlob, processedAudioBlob]);
+  }, [audioBlob, processedAudioBlob, targetLanguage.code]);
 
   const handleVoiceButton = async () => {
     if (isRecording) {
@@ -102,11 +128,6 @@ export default function TranslatePage() {
       await navigator.clipboard.writeText(translatedText);
     }
   };
-
-  const [sourceLanguage, setSourceLanguage] = useState(LANGUAGES[0]);
-  const [targetLanguage, setTargetLanguage] = useState(
-    LANGUAGES[1] ?? LANGUAGES[0]
-  );
 
   const handleSwapLanguages = () => {
     setSourceLanguage(targetLanguage);
@@ -223,13 +244,14 @@ export default function TranslatePage() {
           </button>
 
           {/* Error Messages */}
-          {(recordingError || transcriptionError) && (
+          {(recordingError || transcriptionError || translationError) && (
             <div className="text-red-500 text-sm text-center max-w-xs">
-              {recordingError || transcriptionError}
+              {recordingError || transcriptionError || translationError}
               <button
                 onClick={() => {
                   clearError();
                   setTranscriptionError(null);
+                  setTranslationError(null);
                 }}
                 className="ml-2 underline hover:no-underline"
               >
