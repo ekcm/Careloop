@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Copy, ArrowLeftRight, Mic, Volume2, Square } from 'lucide-react';
+import { useAudioRecorder } from '@/hooks/useAudioRecorder';
+import { transcribeAudio, validateAudioFile } from '@/lib/elevenlabsService';
 
 export default function TranslatePage() {
   //   const [sourceText, setSourceText] = useState('');
@@ -17,21 +19,71 @@ export default function TranslatePage() {
   // Language toggle state
   const [isSwapped, setIsSwapped] = useState(false);
 
-  // Recording state
-  const [isRecording, setIsRecording] = useState(false);
+  // Audio recording hook
+  const {
+    isRecording,
+    startRecording,
+    stopRecording,
+    audioBlob,
+    recordingError,
+    clearError,
+  } = useAudioRecorder();
+
+  // Transcription state
+  const [transcriptionError, setTranscriptionError] = useState<string | null>(
+    null
+  );
+  const [processedAudioBlob, setProcessedAudioBlob] = useState<Blob | null>(
+    null
+  );
+
+  // Handle transcription when audio is recorded
+  useEffect(() => {
+    const handleTranscription = async () => {
+      if (audioBlob && audioBlob !== processedAudioBlob) {
+        setProcessedAudioBlob(audioBlob);
+        setTranscriptionError(null);
+
+        try {
+          // Validate audio file
+          if (!validateAudioFile(audioBlob)) {
+            throw new Error('Invalid audio file. Please try recording again.');
+          }
+
+          // Transcribe audio
+          const result = await transcribeAudio(audioBlob);
+
+          if (result.error) {
+            setTranscriptionError(result.error);
+          } else if (result.text) {
+            // Log the transcription
+            console.log('Transcription result:', result.text);
+            // Update source text with transcribed text
+            setSourceText(result.text);
+          }
+        } catch (error) {
+          console.error('Transcription error:', error);
+          setTranscriptionError(
+            'Failed to transcribe audio. Please try again.'
+          );
+        }
+      }
+    };
+
+    handleTranscription();
+  }, [audioBlob, processedAudioBlob]);
 
   const handleLanguageToggle = () => {
     setIsSwapped(!isSwapped);
   };
 
-  const handleVoiceButton = () => {
-    setIsRecording(!isRecording);
+  const handleVoiceButton = async () => {
     if (isRecording) {
-      // Stop recording logic will go here
-      console.log('Stop recording');
+      // Stop recording
+      await stopRecording();
     } else {
-      // Start recording logic will go here
-      console.log('Start recording');
+      // Start recording
+      await startRecording();
     }
   };
 
@@ -156,7 +208,11 @@ export default function TranslatePage() {
           {/* Voice Recording Button */}
           <button
             onClick={handleVoiceButton}
-            className={`flex items-center justify-center w-16 h-16 ${isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'} rounded-full shadow-lg transition-colors`}
+            className={`flex items-center justify-center w-16 h-16 ${
+              isRecording
+                ? 'bg-red-500 hover:bg-red-600'
+                : 'bg-blue-500 hover:bg-blue-600'
+            } rounded-full shadow-lg transition-colors`}
           >
             {isRecording ? (
               <Square size={24} className="text-white" />
@@ -164,6 +220,29 @@ export default function TranslatePage() {
               <Mic size={24} className="text-white" />
             )}
           </button>
+
+          {/* Error Messages */}
+          {(recordingError || transcriptionError) && (
+            <div className="text-red-500 text-sm text-center max-w-xs">
+              {recordingError || transcriptionError}
+              <button
+                onClick={() => {
+                  clearError();
+                  setTranscriptionError(null);
+                }}
+                className="ml-2 underline hover:no-underline"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
+          {/* Status Messages */}
+          {isRecording && (
+            <div className="text-blue-600 text-sm">
+              Recording... Click to stop
+            </div>
+          )}
         </div>
       </div>
     </div>
