@@ -4,20 +4,13 @@ import { useState, useEffect } from 'react';
 import { Copy, ArrowLeftRight, Mic, Volume2, Square } from 'lucide-react';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { transcribeAudio, validateAudioFile } from '@/lib/elevenlabsService';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { LANGUAGES } from '@/lib/languageConfig';
 
 export default function TranslatePage() {
-  //   const [sourceText, setSourceText] = useState('');
-  //   const [translatedText, setTranslatedText] = useState('');
-
-  // hard code the sourceText and translatedText first
-  const [sourceText, setSourceText] = useState(
-    'Can you bring me a glass of water?'
-  );
+  const [sourceText, setSourceText] = useState('');
   // set translatedText later
-  const [translatedText] = useState('သောက်သုံးရန်ရေတစ်ခွက် ယူပေးနိုင်မလား?');
-
-  // Language toggle state
-  const [isSwapped, setIsSwapped] = useState(false);
+  const [translatedText] = useState('');
 
   // Audio recording hook
   const {
@@ -73,10 +66,6 @@ export default function TranslatePage() {
     handleTranscription();
   }, [audioBlob, processedAudioBlob]);
 
-  const handleLanguageToggle = () => {
-    setIsSwapped(!isSwapped);
-  };
-
   const handleVoiceButton = async () => {
     if (isRecording) {
       // Stop recording
@@ -114,6 +103,16 @@ export default function TranslatePage() {
     }
   };
 
+  const [sourceLanguage, setSourceLanguage] = useState(LANGUAGES[0]);
+  const [targetLanguage, setTargetLanguage] = useState(
+    LANGUAGES[1] ?? LANGUAGES[0]
+  );
+
+  const handleSwapLanguages = () => {
+    setSourceLanguage(targetLanguage);
+    setTargetLanguage(sourceLanguage);
+  };
+
   return (
     <div className="p-4 pb-20">
       {/* Main Translation Area */}
@@ -122,7 +121,7 @@ export default function TranslatePage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between p-3 border-b border-gray-100">
             <span className="text-sm font-medium text-gray-700">
-              {isSwapped ? 'မြန်မာဘာသာ' : 'English'}
+              {sourceLanguage.label}
             </span>
             <button
               onClick={handleCopySource}
@@ -130,7 +129,6 @@ export default function TranslatePage() {
               className="flex items-center gap-1 px-2 py-1 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Copy size={14} />
-              {/* <span className="text-xs">Copy</span> */}
             </button>
           </div>
           <div className="relative">
@@ -154,7 +152,7 @@ export default function TranslatePage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between p-3 border-b border-gray-100">
             <span className="text-sm font-medium text-gray-700">
-              {isSwapped ? 'English' : 'မြန်မာဘာသာ'}
+              {targetLanguage.label}
             </span>
             <button
               onClick={handleCopyTranslated}
@@ -162,7 +160,6 @@ export default function TranslatePage() {
               className="flex items-center gap-1 px-2 py-1 text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Copy size={14} />
-              {/* <span className="text-xs">Copy</span> */}
             </button>
           </div>
           <div className="relative">
@@ -187,20 +184,24 @@ export default function TranslatePage() {
           </div>
         </div>
 
-        {/* Language Toggle Switch */}
-        <div className="flex items-center justify-center py-1">
+        {/* Language Switchers */}
+        <div className="flex items-center justify-center gap-4 py-1">
+          <LanguageSwitcher
+            value={sourceLanguage}
+            onChange={setSourceLanguage}
+          />
           <button
-            onClick={handleLanguageToggle}
-            className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors"
+            type="button"
+            onClick={handleSwapLanguages}
+            className="p-2 rounded-full bg-white border border-gray-200 hover:bg-gray-100 transition-colors flex items-center justify-center"
+            aria-label="Swap languages"
           >
-            <span className="text-sm font-medium text-gray-700">
-              {isSwapped ? 'English' : 'မြန်မာဘာသာ'}
-            </span>
-            <ArrowLeftRight size={16} className="text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">
-              {isSwapped ? 'မြန်မာဘာသာ' : 'English'}
-            </span>
+            <ArrowLeftRight size={18} />
           </button>
+          <LanguageSwitcher
+            value={targetLanguage}
+            onChange={setTargetLanguage}
+          />
         </div>
 
         {/* Voice Control Container */}
