@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLanguage } from '@/lib/LanguageContext';
 import { translationService } from '@/lib/translationService';
+import { useTranslationStore } from '@/lib/stores/translationStore';
 
 interface UseTranslationResult {
   translatedText: string;
@@ -17,37 +18,41 @@ interface UseTranslationResult {
  */
 export function useTranslation(text: string): UseTranslationResult {
   const { currentLanguage } = useLanguage();
-  const [updateCounter, setUpdateCounter] = useState(0);
+  const [textId, setTextId] = useState<string | null>(null);
+
+  // Subscribe to store changes for reactivity
+  const translations = useTranslationStore((state) => state.translations);
 
   // Generate stable ID for this text
-  const textId = useMemo(() => {
-    return translationService.registerText(text);
+  const stableTextId = useMemo(() => {
+    // Create a stable ID without calling registerText
+    const trimmedText = text.slice(0, 50);
+    let hash = 0;
+    for (let i = 0; i < trimmedText.length; i++) {
+      const char = trimmedText.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
+    }
+    return `trans_${Math.abs(hash).toString(36)}_${text.length}`;
   }, [text]);
 
-  // Force re-render when translations update
+  // Register text in effect to avoid state updates during render
   useEffect(() => {
-    const unsubscribe = translationService.subscribe(() => {
-      // console.log(`Hook received translation update for text: "${text}"`);
-      setUpdateCounter((prev) => prev + 1);
-    });
-    return () => {
-      unsubscribe();
-    };
+    const id = translationService.registerText(text);
+    setTextId(id);
   }, [text]);
 
   // Queue for translation when language changes
   useEffect(() => {
-    // Only translate if not English (assume English is default)
-    if (currentLanguage.code !== 'en') {
+    if (textId && currentLanguage.code !== 'en') {
       translationService.queueForTranslation(textId, currentLanguage.code);
     }
   }, [textId, currentLanguage.code]);
 
   // Get current translation state
-  const translationItem = translationService.getTranslation(
-    textId,
-    currentLanguage.code
-  );
+  const translationItem = textId
+    ? translationService.getTranslation(textId, currentLanguage.code)
+    : undefined;
 
   const result = {
     translatedText:
@@ -57,9 +62,6 @@ export function useTranslation(text: string): UseTranslationResult {
     isTranslating: translationItem?.isTranslating || false,
     originalText: text,
   };
-
-  // Debug logging
-  // console.log(`Hook returning for "${text}":`, result.translatedText);
 
   return result;
 }
@@ -71,22 +73,30 @@ export function useTranslation(text: string): UseTranslationResult {
  */
 export function useTranslations(texts: string[]): UseTranslationResult[] {
   const { currentLanguage } = useLanguage();
-  const [updateCounter, setUpdateCounter] = useState(0);
+  const [textIds, setTextIds] = useState<string[]>([]);
+
+  // Subscribe to store changes for reactivity
+  const translations = useTranslationStore((state) => state.translations);
 
   // Generate stable IDs for all texts
-  const textIds = useMemo(() => {
-    return texts.map((text) => translationService.registerText(text));
+  const stableTextIds = useMemo(() => {
+    return texts.map((text) => {
+      const trimmedText = text.slice(0, 50);
+      let hash = 0;
+      for (let i = 0; i < trimmedText.length; i++) {
+        const char = trimmedText.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash = hash & hash;
+      }
+      return `trans_${Math.abs(hash).toString(36)}_${text.length}`;
+    });
   }, [texts]);
 
-  // Force re-render when translations update
+  // Register texts in effect to avoid state updates during render
   useEffect(() => {
-    const unsubscribe = translationService.subscribe(() => {
-      setUpdateCounter((prev) => prev + 1);
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, []);
+    const ids = texts.map((text) => translationService.registerText(text));
+    setTextIds(ids);
+  }, [texts]);
 
   // Queue all texts for translation when language changes
   useEffect(() => {
@@ -99,10 +109,9 @@ export function useTranslations(texts: string[]): UseTranslationResult[] {
 
   // Return translation results for all texts
   return texts.map((text, index) => {
-    const translationItem = translationService.getTranslation(
-      textIds[index],
-      currentLanguage.code
-    );
+    const translationItem = textIds[index]
+      ? translationService.getTranslation(textIds[index], currentLanguage.code)
+      : undefined;
 
     return {
       translatedText:

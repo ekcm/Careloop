@@ -1,9 +1,11 @@
+import { useTranslationStore } from './stores/translationStore';
+
 interface TranslationItem {
   id: string;
   originalText: string;
   translatedText?: string;
   isTranslating?: boolean;
-  languageCode?: string; // Track which language this translation is for
+  languageCode?: string;
 }
 
 interface TranslationConfig {
@@ -16,15 +18,32 @@ interface TranslationConfig {
 }
 
 class TranslationService {
-  private translations = new Map<string, TranslationItem>();
-  private config: TranslationConfig | null = null; // Will be loaded dynamically
+  private config: TranslationConfig | null = null;
+
+  // Generate consistent ID for text
+  private generateId(text: string): string {
+    const trimmedText = text.slice(0, 50);
+    let hash = 0;
+    for (let i = 0; i < trimmedText.length; i++) {
+      const char = trimmedText.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
+    }
+    return `trans_${Math.abs(hash).toString(36)}_${text.length}`;
+  }
+
+  // Generate composite key for text + language combination
+  private getCompositeKey(textId: string, languageCode: string): string {
+    return `${textId}_${languageCode}`;
+  }
 
   // Register text for translation and return a unique ID
   registerText(originalText: string): string {
+    const store = useTranslationStore.getState();
     const id = this.generateId(originalText);
 
-    if (!this.translations.has(id)) {
-      this.translations.set(id, {
+    if (!store.translations[id]) {
+      store.setTranslation(id, {
         id,
         originalText,
         translatedText: originalText, // fallback to original
@@ -35,19 +54,41 @@ class TranslationService {
     return id;
   }
 
-  // Generate composite key for text + language combination
-  private getCompositeKey(textId: string, languageCode: string): string {
-    return `${textId}_${languageCode}`;
+  // Get translation for a text ID and language
+  getTranslation(
+    id: string,
+    languageCode?: string
+  ): TranslationItem | undefined {
+    const store = useTranslationStore.getState();
+
+    if (languageCode) {
+      // Try to get cached translation for specific language
+      const compositeKey = this.getCompositeKey(id, languageCode);
+      const cachedTranslation = store.translations[compositeKey];
+      if (cachedTranslation) {
+        return cachedTranslation;
+      }
+    }
+
+    // Fallback to original item
+    return store.translations[id];
+  }
+
+  // Get all current translations
+  getAllTranslations(): TranslationItem[] {
+    const store = useTranslationStore.getState();
+    return Object.values(store.translations);
   }
 
   // Translate text immediately (async processing)
-  async queueForTranslation(id: string, targetLanguage: string) {
-    const item = this.translations.get(id);
+  async queueForTranslation(id: string, targetLanguage: string): Promise<void> {
+    const store = useTranslationStore.getState();
+    const item = store.translations[id];
     if (!item) return;
 
     // Check if we already have a translation for this text + language combination
     const compositeKey = this.getCompositeKey(id, targetLanguage);
-    const existingTranslation = this.translations.get(compositeKey);
+    const existingTranslation = store.translations[compositeKey];
 
     if (existingTranslation && existingTranslation.translatedText) {
       // We already have this translation, no need to translate
@@ -68,14 +109,13 @@ class TranslationService {
     }
 
     // Mark as translating
-    item.isTranslating = true;
-    this.translations.set(id, item);
-    this.notifySubscribers();
+    store.setTranslating(id, true);
 
     // Load config if not already loaded
     if (!this.config) {
       const { TRANSLATION_CONFIG } = await import('./translationConfig');
       this.config = TRANSLATION_CONFIG;
+      store.setConfig(this.config);
     }
 
     try {
@@ -83,15 +123,14 @@ class TranslationService {
         console.log(`Translating "${item.originalText}" to ${targetLanguage}`);
       }
 
-      // Translate immediately (no batching)
+      // Translate immediately
       const translatedText = await this.translateText(
         item.originalText,
         targetLanguage
       );
 
       // Store the translation with composite key for caching
-      const compositeKey = this.getCompositeKey(id, targetLanguage);
-      this.translations.set(compositeKey, {
+      store.setTranslation(compositeKey, {
         id: compositeKey,
         originalText: item.originalText,
         translatedText,
@@ -100,48 +139,23 @@ class TranslationService {
       });
 
       // Also update the original item for backward compatibility
-      item.translatedText = translatedText;
-      item.isTranslating = false;
-      this.translations.set(id, item);
+      store.setTranslation(id, {
+        ...item,
+        translatedText,
+        isTranslating: false,
+      });
 
       if (this.config?.ENABLE_LOGGING) {
         console.log(
           `Translation complete: "${item.originalText}" -> "${translatedText}"`
         );
       }
-
-      this.notifySubscribers();
     } catch (error) {
       console.error(`Translation failed for "${item.originalText}":`, error);
 
       // Reset translation state on error
-      item.isTranslating = false;
-      this.translations.set(id, item);
-      this.notifySubscribers();
+      store.setTranslating(id, false);
     }
-  }
-
-  // Get translation for a text ID and language
-  getTranslation(
-    id: string,
-    languageCode?: string
-  ): TranslationItem | undefined {
-    if (languageCode) {
-      // Try to get cached translation for specific language
-      const compositeKey = this.getCompositeKey(id, languageCode);
-      const cachedTranslation = this.translations.get(compositeKey);
-      if (cachedTranslation) {
-        return cachedTranslation;
-      }
-    }
-
-    // Fallback to original item (for backward compatibility)
-    return this.translations.get(id);
-  }
-
-  // Get all current translations
-  getAllTranslations(): TranslationItem[] {
-    return Array.from(this.translations.values());
   }
 
   // Translate single text immediately
@@ -149,12 +163,9 @@ class TranslationService {
     text: string,
     targetLanguage: string
   ): Promise<string> {
-    // Import config to check if real translation is enabled
-    const { TRANSLATION_CONFIG } = await import('./translationConfig');
-
-    if (!TRANSLATION_CONFIG?.USE_REAL_TRANSLATION) {
+    if (!this.config?.USE_REAL_TRANSLATION) {
       // Fallback to mock for development
-      if (TRANSLATION_CONFIG?.ENABLE_LOGGING) {
+      if (this.config?.ENABLE_LOGGING) {
         console.log(`Mock translating "${text}" to ${targetLanguage}`);
       }
       return `[${targetLanguage.toUpperCase()}] ${text}`;
@@ -164,7 +175,7 @@ class TranslationService {
       // Dynamically import OpenAI service to avoid loading it unnecessarily
       const { openaiService } = await import('./openaiService');
 
-      if (TRANSLATION_CONFIG?.ENABLE_LOGGING) {
+      if (this.config?.ENABLE_LOGGING) {
         console.log(
           `Real translating "${text}" to ${targetLanguage} via OpenAI`
         );
@@ -183,34 +194,10 @@ class TranslationService {
     }
   }
 
-  // Generate consistent ID for text
-  private generateId(text: string): string {
-    // Create a simple hash that works in both browser and Node environments
-    const trimmedText = text.slice(0, 50);
-    let hash = 0;
-    for (let i = 0; i < trimmedText.length; i++) {
-      const char = trimmedText.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32bit integer
-    }
-    return `trans_${Math.abs(hash).toString(36)}_${text.length}`;
-  }
-
-  // Subscriber management for React components
-  private subscribers = new Set<() => void>();
-
-  subscribe(callback: () => void) {
-    this.subscribers.add(callback);
-    return () => this.subscribers.delete(callback);
-  }
-
-  private notifySubscribers() {
-    this.subscribers.forEach((callback) => callback());
-  }
-
   // Clear all translations (useful for testing/reset)
-  clear() {
-    this.translations.clear();
+  clear(): void {
+    const store = useTranslationStore.getState();
+    store.clear();
   }
 }
 
