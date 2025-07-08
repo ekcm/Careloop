@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useLanguage } from '@/lib/LanguageContext';
+import { useLanguageStore } from '@/lib/stores/languageStore';
 import { translationService } from '@/lib/translationService';
 import { useTranslationStore } from '@/lib/stores/translationStore';
 
@@ -17,7 +17,7 @@ interface UseTranslationResult {
  * @returns Object with translatedText, isTranslating status, and originalText
  */
 export function useTranslation(text: string): UseTranslationResult {
-  const { currentLanguage } = useLanguage();
+  const currentLanguage = useLanguageStore((state) => state.currentLanguage);
   const [textId, setTextId] = useState<string | null>(null);
 
   // Subscribe to store changes for reactivity
@@ -72,7 +72,7 @@ export function useTranslation(text: string): UseTranslationResult {
  * @returns Array of translation results
  */
 export function useTranslations(texts: string[]): UseTranslationResult[] {
-  const { currentLanguage } = useLanguage();
+  const currentLanguage = useLanguageStore((state) => state.currentLanguage);
   const [textIds, setTextIds] = useState<string[]>([]);
 
   // Subscribe to store changes for reactivity

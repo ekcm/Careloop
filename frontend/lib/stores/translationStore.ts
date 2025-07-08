@@ -8,13 +8,22 @@ interface TranslationItem {
   languageCode?: string;
 }
 
+interface TranslationConfig {
+  USE_REAL_TRANSLATION: boolean;
+  MODEL: string;
+  MAX_RETRIES: number;
+  TIMEOUT_MS: number;
+  DEFAULT_LANGUAGE: string;
+  ENABLE_LOGGING: boolean;
+}
+
 interface TranslationState {
   translations: Record<string, TranslationItem>;
-  config: any | null;
+  config: TranslationConfig | null;
   // Pure state actions
   setTranslation: (id: string, item: TranslationItem) => void;
   setTranslating: (id: string, isTranslating: boolean) => void;
-  setConfig: (config: any) => void;
+  setConfig: (config: TranslationConfig) => void;
   clear: () => void;
 }
 
@@ -43,7 +52,7 @@ export const useTranslationStore = create<TranslationState>((set) => ({
     }));
   },
 
-  setConfig: (config: any) => {
+  setConfig: (config: TranslationConfig) => {
     set({ config });
   },
 

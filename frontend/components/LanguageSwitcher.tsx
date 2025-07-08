@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
-import { useLanguage } from '@/lib/LanguageContext';
+import { useLanguageStore } from '@/lib/stores/languageStore';
 import { LANGUAGES, type Language } from '@/lib/languageConfig';
 
 export default function LanguageSwitcher({
@@ -20,7 +20,7 @@ export default function LanguageSwitcher({
   onChange?: (lang: Language) => void;
   label?: string;
 } = {}) {
-  const context = useLanguage();
+  const context = useLanguageStore();
   const currentLanguage = value ?? context.currentLanguage;
   const setCurrentLanguage = onChange ?? context.setCurrentLanguage;
 
