@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { type Language } from '@/lib/languageConfig';
 import { useLanguageStore } from '@/lib/stores/languageStore';
 import { useEffect } from 'react';
+import { translationService } from '@/lib/translationService';
 
 interface LanguageIndicatorProps {
   language?: Language;
@@ -43,6 +44,39 @@ export default function LanguageIndicator({
         currentLanguage: currentLanguage.code,
         currentLanguageLabel: currentLanguage.label,
       });
+
+      // Automatically translate the text to the current language
+      const translateText = async () => {
+        try {
+          const id = translationService.registerText(originalText);
+          const existingTranslation = translationService.getTranslation(
+            id,
+            currentLanguage.code
+          );
+
+          // Only translate if we don't already have a translation
+          if (
+            !existingTranslation?.translatedText ||
+            existingTranslation.translatedText === originalText
+          ) {
+            await translationService.queueForTranslation(
+              id,
+              currentLanguage.code
+            );
+            console.log(
+              `Auto-translation initiated for: "${originalText}" -> ${currentLanguage.label}`
+            );
+          } else {
+            console.log(
+              `Translation already exists for: "${originalText}" -> "${existingTranslation.translatedText}"`
+            );
+          }
+        } catch (error) {
+          console.error('Auto-translation failed:', error);
+        }
+      };
+
+      translateText();
     }
   }, [
     detectedLanguage,
