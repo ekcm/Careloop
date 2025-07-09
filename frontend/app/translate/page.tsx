@@ -174,6 +174,10 @@ export default function TranslatePage() {
   const handleSwapLanguages = () => {
     setSourceLanguage(targetLanguage);
     setTargetLanguage(sourceLanguage);
+
+    const tempText = sourceText;
+    setSourceText(translatedText);
+    setTranslatedText(tempText);
   };
 
   return (
