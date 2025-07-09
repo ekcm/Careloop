@@ -1,7 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Copy, ArrowLeftRight, Mic, Volume2, Square } from 'lucide-react';
+import {
+  Copy,
+  ArrowLeftRight,
+  Mic,
+  Volume2,
+  Square,
+  Languages,
+} from 'lucide-react';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { transcribeAudio, validateAudioFile } from '@/lib/elevenlabsService';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -11,6 +18,7 @@ import { translationService } from '@/lib/translationService';
 export default function TranslatePage() {
   const [sourceText, setSourceText] = useState('');
   const [translatedText, setTranslatedText] = useState('');
+  const [isTranslating, setIsTranslating] = useState(false);
 
   const [sourceLanguage, setSourceLanguage] = useState(LANGUAGES[0]);
   const [targetLanguage, setTargetLanguage] = useState(
@@ -92,6 +100,32 @@ export default function TranslatePage() {
     handleTranscription();
   }, [audioBlob, processedAudioBlob, targetLanguage.code]);
 
+  const handleTranslate = async () => {
+    if (!sourceText || sourceText.trim() === '') {
+      console.log('No text to translate');
+      return;
+    }
+
+    setIsTranslating(true);
+    setTranslationError(null);
+
+    try {
+      const id = translationService.registerText(sourceText);
+      await translationService.queueForTranslation(id, targetLanguage.code);
+      const translationItem = translationService.getTranslation(
+        id,
+        targetLanguage.code
+      );
+      setTranslatedText(translationItem?.translatedText || '');
+    } catch (err) {
+      console.error('Translation error:', err);
+      setTranslationError('Failed to translate text. Please try again.');
+      setTranslatedText('');
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
   const handleVoiceButton = async () => {
     if (isRecording) {
       // Stop recording
@@ -165,15 +199,26 @@ export default function TranslatePage() {
               value={sourceText}
               onChange={(e) => setSourceText(e.target.value)}
               placeholder="Enter text to translate..."
-              className="w-full h-full p-4 pr-12 resize-none border-0 focus:ring-0 focus:outline-none text-gray-800 placeholder-gray-400"
+              className="w-full h-full p-4 pr-24 resize-none border-0 focus:ring-0 focus:outline-none text-gray-800 placeholder-gray-400"
               style={{ minHeight: '180px', height: 'calc(30vh - 60px)' }}
             />
-            <button
-              onClick={handleSourceSpeaker}
-              className="absolute bottom-3 right-3 p-2 text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              <Volume2 size={16} />
-            </button>
+            <div className="absolute bottom-3 right-3 flex space-x-1">
+              <button
+                onClick={handleTranslate}
+                disabled={isTranslating || !sourceText}
+                className="p-2 text-gray-500 hover:text-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                title="Translate"
+              >
+                <Languages size={16} />
+              </button>
+              <button
+                onClick={handleSourceSpeaker}
+                className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+                title="Listen"
+              >
+                <Volume2 size={16} />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -273,6 +318,10 @@ export default function TranslatePage() {
             <div className="text-blue-600 text-sm">
               Recording... Click to stop
             </div>
+          )}
+
+          {isTranslating && (
+            <div className="text-green-600 text-sm">Translating...</div>
           )}
         </div>
       </div>
