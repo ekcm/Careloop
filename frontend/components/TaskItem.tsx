@@ -92,21 +92,63 @@ export default function TaskItem({
     languageCode?: string;
   } | null>(null);
 
+  // Register and fetch label translation
   useEffect(() => {
     const labelId = translationService.registerText(label);
+
+    // Initial fetch of translation
     const translation = translationService.getTranslation(labelId, 'en');
     setLabelTranslation(translation || null);
-  }, [label]);
 
+    // Queue for translation if needed
+    if (
+      labelLanguageDetection.detectedLanguage &&
+      labelLanguageDetection.detectedLanguage !== 'en' &&
+      (!translation?.translatedText || translation.translatedText === label)
+    ) {
+      translationService.queueForTranslation(labelId, 'en');
+    }
+  }, [label, labelLanguageDetection.detectedLanguage]);
+
+  // Register and fetch notes translation
   useEffect(() => {
     if (notes) {
       const notesId = translationService.registerText(notes);
+
+      // Initial fetch of translation
       const translation = translationService.getTranslation(notesId, 'en');
       setNotesTranslation(translation || null);
+
+      // Queue for translation if needed
+      if (
+        notesLanguageDetection.detectedLanguage &&
+        notesLanguageDetection.detectedLanguage !== 'en' &&
+        (!translation?.translatedText || translation.translatedText === notes)
+      ) {
+        translationService.queueForTranslation(notesId, 'en');
+      }
     } else {
       setNotesTranslation(null);
     }
-  }, [notes]);
+  }, [notes, notesLanguageDetection.detectedLanguage]);
+
+  // Refresh translations when toggle state changes
+  useEffect(() => {
+    if (showLabelTranslated && label) {
+      const labelId = translationService.registerText(label);
+      const translation = translationService.getTranslation(labelId, 'en');
+      setLabelTranslation(translation || null);
+    }
+  }, [showLabelTranslated, label]);
+
+  useEffect(() => {
+    if (showNotesTranslated && notes) {
+      const notesId = translationService.registerText(notes);
+      const translation = translationService.getTranslation(notesId, 'en');
+      setNotesTranslation(translation || null);
+    }
+  }, [showNotesTranslated, notes]);
+
   const noCommentsText = useT('No comments yet');
   const addCommentPlaceholder = useT('Add a comment...');
   const sendButtonText = useT('Send');
@@ -145,6 +187,18 @@ export default function TaskItem({
 
     fetchComments();
   }, [todo_id, showFeedback, needsRefetch]);
+
+  // Refresh comment translations when toggle state changes
+  useEffect(() => {
+    Object.entries(showCommentTranslated).forEach(([idx, isShown]) => {
+      if (isShown && commentContents[Number(idx)]) {
+        const commentId = translationService.registerText(
+          commentContents[Number(idx)]
+        );
+        translationService.queueForTranslation(commentId, 'en');
+      }
+    });
+  }, [showCommentTranslated, commentContents]);
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
