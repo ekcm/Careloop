@@ -12,6 +12,10 @@ import {
 import { cn } from '@/lib/utils';
 import { useEffect, useState, useMemo } from 'react';
 import { useT, useTranslations } from '@/hooks/useTranslation';
+import {
+  useLanguageDetection,
+  useLanguageDetections,
+} from '@/hooks/useLanguageDetection';
 import { taskIconMap } from '@/lib/typing';
 import { format } from 'date-fns';
 import {
@@ -20,6 +24,7 @@ import {
   addComment,
   getTodoComments,
 } from '@/apis/supabaseApi';
+import LanguageIndicator from './LanguageIndicator';
 
 type TaskItemProps = {
   id: number;
@@ -54,6 +59,10 @@ export default function TaskItem({
   const [comments, setComments] = useState<Comment[]>([]);
   const [needsRefetch, setNeedsRefetch] = useState(false);
 
+  // Language detection for task content
+  const labelLanguageDetection = useLanguageDetection(label);
+  const notesLanguageDetection = useLanguageDetection(notes || '');
+
   const deleteConfirmText = useT('Are you sure you want to delete this task?');
   const deleteText = useT('Delete');
   const cancelText = useT('Cancel');
@@ -84,6 +93,9 @@ export default function TaskItem({
     [comments]
   );
   const translatedComments = useTranslations(commentContents);
+
+  // Language detection for comments
+  const commentLanguageDetections = useLanguageDetections(commentContents);
 
   // --- useEffect to fetch comments ---
   useEffect(() => {
@@ -154,20 +166,36 @@ export default function TaskItem({
                 </div>
               </div>
 
-              <p
-                className={cn(
-                  'text-base font-ms break-words',
-                  completed && 'line-through text-muted-foreground'
-                )}
-              >
-                {useT(label)}
-              </p>
+              <div className="flex items-center gap-2">
+                <p
+                  className={cn(
+                    'text-base font-ms break-words flex-1',
+                    completed && 'line-through text-muted-foreground'
+                  )}
+                >
+                  {useT(label)}
+                </p>
+                <LanguageIndicator
+                  language={labelLanguageDetection.languageObject}
+                  detectedLanguage={labelLanguageDetection.detectedLanguage}
+                  isDetecting={labelLanguageDetection.isDetecting}
+                  size="sm"
+                />
+              </div>
 
               {hasNotes && (
                 <div className="w-full border-t-1 pt-1 text-md">
-                  <span className="text-muted-foreground">
-                    {translatedNotes}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground flex-1">
+                      {translatedNotes}
+                    </span>
+                    <LanguageIndicator
+                      language={notesLanguageDetection.languageObject}
+                      detectedLanguage={notesLanguageDetection.detectedLanguage}
+                      isDetecting={notesLanguageDetection.isDetecting}
+                      size="sm"
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -210,10 +238,26 @@ export default function TaskItem({
                           {format(new Date(comment.created_at), 'dd MMM, p')}
                         </span>
                       </div>
-                      <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap mt-1">
-                        {translatedComments[idx]?.translatedText ??
-                          comment.comment_content}
-                      </p>
+                      <div className="flex items-start gap-2 mt-1">
+                        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap flex-1">
+                          {translatedComments[idx]?.translatedText ??
+                            comment.comment_content}
+                        </p>
+                        <LanguageIndicator
+                          language={
+                            commentLanguageDetections[idx]?.languageObject
+                          }
+                          detectedLanguage={
+                            commentLanguageDetections[idx]?.detectedLanguage ||
+                            'en'
+                          }
+                          isDetecting={
+                            commentLanguageDetections[idx]?.isDetecting
+                          }
+                          size="sm"
+                          className="mt-1"
+                        />
+                      </div>
                     </div>
                   ))
                 ) : (
