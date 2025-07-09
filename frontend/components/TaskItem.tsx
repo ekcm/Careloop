@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useState, useMemo } from 'react';
-import { useT, useTranslations } from '@/hooks/useTranslation';
+import { useT } from '@/hooks/useTranslation';
 import { translationService } from '@/lib/translationService';
 import {
   useLanguageDetection,
@@ -223,7 +223,7 @@ export default function TaskItem({
 
   // Queue comment translations
   useEffect(() => {
-    commentContents.forEach((content, idx) => {
+    commentContents.forEach((content) => {
       const id = translationService.registerText(content);
       translationService.queueForTranslation(id, currentLanguage.code);
     });
