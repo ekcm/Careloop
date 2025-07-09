@@ -77,20 +77,32 @@ export default function TaskItem({
   const viewNotesLabel = useT('View Notes');
 
   // Get translations for display
-  const [labelTranslation, setLabelTranslation] = useState<any>(null);
-  const [notesTranslation, setNotesTranslation] = useState<any>(null);
+  const [labelTranslation, setLabelTranslation] = useState<{
+    id: string;
+    originalText: string;
+    translatedText?: string;
+    isTranslating?: boolean;
+    languageCode?: string;
+  } | null>(null);
+  const [notesTranslation, setNotesTranslation] = useState<{
+    id: string;
+    originalText: string;
+    translatedText?: string;
+    isTranslating?: boolean;
+    languageCode?: string;
+  } | null>(null);
 
   useEffect(() => {
     const labelId = translationService.registerText(label);
     const translation = translationService.getTranslation(labelId, 'en');
-    setLabelTranslation(translation);
+    setLabelTranslation(translation || null);
   }, [label]);
 
   useEffect(() => {
     if (notes) {
       const notesId = translationService.registerText(notes);
       const translation = translationService.getTranslation(notesId, 'en');
-      setNotesTranslation(translation);
+      setNotesTranslation(translation || null);
     } else {
       setNotesTranslation(null);
     }
