@@ -26,6 +26,7 @@ import {
   getTodoComments,
 } from '@/apis/supabaseApi';
 import LanguageIndicator from './LanguageIndicator';
+import { useLanguageStore } from '@/lib/stores/languageStore';
 
 type TaskItemProps = {
   id: number;
@@ -65,6 +66,9 @@ export default function TaskItem({
     Record<number, boolean>
   >({});
 
+  // Get current language from store
+  const currentLanguage = useLanguageStore((state) => state.currentLanguage);
+
   // Language detection for task content
   const labelLanguageDetection = useLanguageDetection(label);
   const notesLanguageDetection = useLanguageDetection(notes || '');
@@ -96,58 +100,82 @@ export default function TaskItem({
   useEffect(() => {
     const labelId = translationService.registerText(label);
 
-    // Initial fetch of translation
-    const translation = translationService.getTranslation(labelId, 'en');
+    // Get translation for current language
+    const translation = translationService.getTranslation(
+      labelId,
+      currentLanguage.code
+    );
     setLabelTranslation(translation || null);
 
     // Queue for translation if needed
     if (
       labelLanguageDetection.detectedLanguage &&
-      labelLanguageDetection.detectedLanguage !== 'en' &&
-      (!translation?.translatedText || translation.translatedText === label)
+      labelLanguageDetection.detectedLanguage !== currentLanguage.code
     ) {
-      translationService.queueForTranslation(labelId, 'en');
+      translationService.queueForTranslation(labelId, currentLanguage.code);
     }
-  }, [label, labelLanguageDetection.detectedLanguage]);
+  }, [label, labelLanguageDetection.detectedLanguage, currentLanguage.code]);
 
   // Register and fetch notes translation
   useEffect(() => {
     if (notes) {
       const notesId = translationService.registerText(notes);
 
-      // Initial fetch of translation
-      const translation = translationService.getTranslation(notesId, 'en');
+      // Get translation for current language
+      const translation = translationService.getTranslation(
+        notesId,
+        currentLanguage.code
+      );
       setNotesTranslation(translation || null);
 
       // Queue for translation if needed
       if (
         notesLanguageDetection.detectedLanguage &&
-        notesLanguageDetection.detectedLanguage !== 'en' &&
-        (!translation?.translatedText || translation.translatedText === notes)
+        notesLanguageDetection.detectedLanguage !== currentLanguage.code
       ) {
-        translationService.queueForTranslation(notesId, 'en');
+        translationService.queueForTranslation(notesId, currentLanguage.code);
       }
     } else {
       setNotesTranslation(null);
     }
-  }, [notes, notesLanguageDetection.detectedLanguage]);
+  }, [notes, notesLanguageDetection.detectedLanguage, currentLanguage.code]);
 
   // Refresh translations when toggle state changes
   useEffect(() => {
     if (showLabelTranslated && label) {
       const labelId = translationService.registerText(label);
-      const translation = translationService.getTranslation(labelId, 'en');
+      const translation = translationService.getTranslation(
+        labelId,
+        currentLanguage.code
+      );
       setLabelTranslation(translation || null);
+
+      if (
+        !translation?.translatedText ||
+        translation.translatedText === label
+      ) {
+        translationService.queueForTranslation(labelId, currentLanguage.code);
+      }
     }
-  }, [showLabelTranslated, label]);
+  }, [showLabelTranslated, label, currentLanguage.code]);
 
   useEffect(() => {
     if (showNotesTranslated && notes) {
       const notesId = translationService.registerText(notes);
-      const translation = translationService.getTranslation(notesId, 'en');
+      const translation = translationService.getTranslation(
+        notesId,
+        currentLanguage.code
+      );
       setNotesTranslation(translation || null);
+
+      if (
+        !translation?.translatedText ||
+        translation.translatedText === notes
+      ) {
+        translationService.queueForTranslation(notesId, currentLanguage.code);
+      }
     }
-  }, [showNotesTranslated, notes]);
+  }, [showNotesTranslated, notes, currentLanguage.code]);
 
   const noCommentsText = useT('No comments yet');
   const addCommentPlaceholder = useT('Add a comment...');
@@ -171,7 +199,35 @@ export default function TaskItem({
     () => comments.map((comment) => comment.comment_content),
     [comments]
   );
-  const translatedComments = useTranslations(commentContents);
+
+  // Use our custom hook for translations
+  const { translatedTexts: translatedCommentContents } = useMemo(() => {
+    const results = commentContents.map((content) => {
+      const id = translationService.registerText(content);
+      const translation = translationService.getTranslation(
+        id,
+        currentLanguage.code
+      );
+      return {
+        originalText: content,
+        translatedText: translation?.translatedText || content,
+        isTranslating: translation?.isTranslating || false,
+        id,
+      };
+    });
+
+    return {
+      translatedTexts: results,
+    };
+  }, [commentContents, currentLanguage.code]);
+
+  // Queue comment translations
+  useEffect(() => {
+    commentContents.forEach((content, idx) => {
+      const id = translationService.registerText(content);
+      translationService.queueForTranslation(id, currentLanguage.code);
+    });
+  }, [commentContents, currentLanguage.code]);
 
   // Language detection for comments
   const commentLanguageDetections = useLanguageDetections(commentContents);
@@ -195,10 +251,10 @@ export default function TaskItem({
         const commentId = translationService.registerText(
           commentContents[Number(idx)]
         );
-        translationService.queueForTranslation(commentId, 'en');
+        translationService.queueForTranslation(commentId, currentLanguage.code);
       }
     });
-  }, [showCommentTranslated, commentContents]);
+  }, [showCommentTranslated, commentContents, currentLanguage.code]);
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -216,6 +272,11 @@ export default function TaskItem({
   };
 
   const hasNotes = notes && notes.trim() !== '';
+
+  // Determine if we should show translations based on language
+  const shouldShowTranslations =
+    currentLanguage.code !== 'en' &&
+    labelLanguageDetection.detectedLanguage !== currentLanguage.code;
 
   return (
     <>
@@ -264,7 +325,8 @@ export default function TaskItem({
                     completed && 'line-through text-muted-foreground'
                   )}
                 >
-                  {showLabelTranslated && labelTranslation?.translatedText
+                  {(shouldShowTranslations || showLabelTranslated) &&
+                  labelTranslation?.translatedText
                     ? labelTranslation.translatedText
                     : label}
                 </p>
@@ -282,7 +344,8 @@ export default function TaskItem({
                 <div className="w-full border-t-1 pt-1 text-md">
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground flex-1">
-                      {showNotesTranslated && notesTranslation?.translatedText
+                      {(shouldShowTranslations || showNotesTranslated) &&
+                      notesTranslation?.translatedText
                         ? notesTranslation.translatedText
                         : notes}
                     </span>
@@ -339,9 +402,10 @@ export default function TaskItem({
                       </div>
                       <div className="flex items-start gap-2 mt-1">
                         <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap flex-1">
-                          {showCommentTranslated[idx] &&
-                          translatedComments[idx]?.translatedText
-                            ? translatedComments[idx].translatedText
+                          {(shouldShowTranslations ||
+                            showCommentTranslated[idx]) &&
+                          translatedCommentContents[idx]?.translatedText
+                            ? translatedCommentContents[idx].translatedText
                             : comment.comment_content}
                         </p>
                         <LanguageIndicator
