@@ -103,13 +103,21 @@ export default function TranslatePage() {
   };
 
   const handleSourceSpeaker = () => {
+    if (!sourceText || sourceText.trim() === '') {
+      console.log('No text available for voice playback in source language');
+      return;
+    }
     // Placeholder for source text-to-speech
-    console.log('Source speaker clicked');
+    console.log('Source speaker clicked with text:', sourceText);
   };
 
   const handleTargetSpeaker = () => {
+    if (!translatedText || translatedText.trim() === '') {
+      console.log('No text available for voice playback in target language');
+      return;
+    }
     // Placeholder for target text-to-speech
-    console.log('Target speaker clicked');
+    console.log('Target speaker clicked with text:', translatedText);
   };
 
   //   const handleClear = () => {
