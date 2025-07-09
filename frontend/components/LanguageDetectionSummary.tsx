@@ -1,7 +1,6 @@
 'use client';
 
-import { Globe, Languages } from 'lucide-react';
-import { useLanguageStore } from '@/lib/stores/languageStore';
+import { Globe } from 'lucide-react';
 import { getLanguageByCode, type Language } from '@/lib/languageConfig';
 import { useT } from '@/hooks/useTranslation';
 
@@ -19,9 +18,7 @@ export default function LanguageDetectionSummary({
   detectedLanguages,
   className,
 }: LanguageDetectionSummaryProps) {
-  const currentLanguage = useLanguageStore((state) => state.currentLanguage);
   const detectedLanguagesText = useT('Detected Languages');
-  const languagesText = useT('Languages');
 
   // Count occurrences of each language
   const languageCounts = detectedLanguages.reduce(

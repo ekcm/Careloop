@@ -3,6 +3,8 @@
 import { Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type Language } from '@/lib/languageConfig';
+import { useLanguageStore } from '@/lib/stores/languageStore';
+import { useEffect } from 'react';
 
 interface LanguageIndicatorProps {
   language?: Language;
@@ -11,6 +13,7 @@ interface LanguageIndicatorProps {
   size?: 'sm' | 'md' | 'lg';
   showIcon?: boolean;
   className?: string;
+  originalText?: string; // Add originalText prop to access the text content
 }
 
 export default function LanguageIndicator({
@@ -20,7 +23,36 @@ export default function LanguageIndicator({
   size = 'sm',
   showIcon = true,
   className,
+  originalText,
 }: LanguageIndicatorProps) {
+  const currentLanguage = useLanguageStore((state) => state.currentLanguage);
+
+  // Check if detected language is different from current language
+  useEffect(() => {
+    if (
+      !isDetecting &&
+      language &&
+      detectedLanguage !== 'en' &&
+      detectedLanguage !== currentLanguage.code &&
+      originalText
+    ) {
+      console.log('Language mismatch detected:', {
+        text: originalText,
+        detectedLanguage: detectedLanguage,
+        detectedLanguageLabel: language.label,
+        currentLanguage: currentLanguage.code,
+        currentLanguageLabel: currentLanguage.label,
+      });
+    }
+  }, [
+    detectedLanguage,
+    currentLanguage.code,
+    currentLanguage.label,
+    language,
+    isDetecting,
+    originalText,
+  ]);
+
   // Don't show indicator for English or when detecting
   if (detectedLanguage === 'en' || isDetecting || !language) {
     return null;

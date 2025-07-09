@@ -180,6 +180,7 @@ export default function TaskItem({
                   detectedLanguage={labelLanguageDetection.detectedLanguage}
                   isDetecting={labelLanguageDetection.isDetecting}
                   size="sm"
+                  originalText={label}
                 />
               </div>
 
@@ -194,6 +195,7 @@ export default function TaskItem({
                       detectedLanguage={notesLanguageDetection.detectedLanguage}
                       isDetecting={notesLanguageDetection.isDetecting}
                       size="sm"
+                      originalText={notes}
                     />
                   </div>
                 </div>
@@ -256,6 +258,7 @@ export default function TaskItem({
                           }
                           size="sm"
                           className="mt-1"
+                          originalText={comment.comment_content}
                         />
                       </div>
                     </div>
