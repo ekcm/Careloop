@@ -7,8 +7,13 @@ import { Toaster } from 'sonner';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Your App',
-  description: 'Caregiving helper',
+  title: 'Careloop',
+  description: 'Careloop',
+  // TODO: add icons and manifest
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-icon.png',
+  }
 };
 
 export default function RootLayout({
@@ -18,6 +23,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" />
+      </head>
       <body className={`${inter.className} min-h-full pb-16 md:pb-0`}>
         {children}
         <BottomNav />
