@@ -135,9 +135,9 @@ export default function TranslatePage() {
   };
 
   return (
-    <div className="p-4 pb-20">
+    <div className="p-4 pb-20 min-h-[calc(100vh-80px)] flex flex-col">
       {/* Main Translation Area */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6 flex-grow">
         {/* Source Text Area */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between p-3 border-b border-gray-100">
@@ -158,7 +158,7 @@ export default function TranslatePage() {
               onChange={(e) => setSourceText(e.target.value)}
               placeholder="Enter text to translate..."
               className="w-full h-full p-4 pr-12 resize-none border-0 focus:ring-0 focus:outline-none text-gray-800 placeholder-gray-400"
-              style={{ minHeight: '160px' }}
+              style={{ minHeight: '180px', height: 'calc(30vh - 60px)' }}
             />
             <button
               onClick={handleSourceSpeaker}
@@ -186,7 +186,7 @@ export default function TranslatePage() {
           <div className="relative">
             <div
               className="w-full h-full p-4 pr-12 text-gray-800"
-              style={{ minHeight: '160px' }}
+              style={{ minHeight: '180px', height: 'calc(30vh - 60px)' }}
             >
               {translatedText ? (
                 <div className="whitespace-pre-wrap">{translatedText}</div>
@@ -206,7 +206,7 @@ export default function TranslatePage() {
         </div>
 
         {/* Language Switchers */}
-        <div className="flex items-center justify-center gap-4 py-1">
+        <div className="flex items-center justify-center gap-4 py-2">
           <LanguageSwitcher
             value={sourceLanguage}
             onChange={setSourceLanguage}
@@ -226,7 +226,7 @@ export default function TranslatePage() {
         </div>
 
         {/* Voice Control Container */}
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-4 mt-2">
           {/* Voice Recording Button */}
           <button
             onClick={handleVoiceButton}
