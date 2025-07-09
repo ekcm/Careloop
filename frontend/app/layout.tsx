@@ -11,9 +11,9 @@ export const metadata: Metadata = {
   description: 'Careloop',
   // TODO: add icons and manifest
   icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-icon.png',
-  }
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({
@@ -24,8 +24,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="apple-touch-icon" href="/apple-icon.png" />
+        <link rel="icon" href="/logo.png" sizes="any" />
+        <link rel="apple-touch-icon" href="/logo.png" />
       </head>
       <body className={`${inter.className} min-h-full pb-16 md:pb-0`}>
         {children}
