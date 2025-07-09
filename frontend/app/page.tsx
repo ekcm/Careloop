@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -22,10 +22,7 @@ import TaskItem from '@/components/TaskItem';
 import AddTask from '@/components/AddTask';
 import { Session } from '@supabase/supabase-js';
 import { useT } from '@/hooks/useTranslation';
-import { useLanguageDetections } from '@/hooks/useLanguageDetection';
 import TaskDisplay from '@/components/task-page/TaskDisplay';
-import LanguageDetectionSummary from '@/components/LanguageDetectionSummary';
-import LanguageDetectionStatus from '@/components/LanguageDetectionStatus';
 
 const getTodayString = () => new Date().toISOString().split('T')[0];
 
@@ -38,19 +35,6 @@ export default function HomePage() {
   const [group, setGroup] = useState<Group | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Extract all text content for language detection
-  const allTexts = useMemo(() => {
-    const texts: string[] = [];
-    tasks.forEach((task) => {
-      if (task.label) texts.push(task.label);
-      if (task.notes) texts.push(task.notes);
-    });
-    return texts;
-  }, [tasks]);
-
-  // Language detection for all task content
-  const languageDetections = useLanguageDetections(allTexts);
 
   // Translation hooks
   const loadingText = useT('Loading tasks...');
@@ -294,26 +278,6 @@ export default function HomePage() {
     <div className="p-4 pb-20">
       <Header />
       <ProgressBar tasks={todaysTasks} />
-
-      {/* Language Detection Status and Summary */}
-      <LanguageDetectionStatus
-        isDetecting={languageDetections.some(
-          (detection) => detection.isDetecting
-        )}
-        error={languageDetections.find((detection) => detection.error)?.error}
-        detectedCount={
-          languageDetections.filter((detection) => !detection.isDetecting)
-            .length
-        }
-        totalCount={languageDetections.length}
-        className="mb-2"
-      />
-      <LanguageDetectionSummary
-        detectedLanguages={languageDetections.map(
-          (detection) => detection.detectedLanguage
-        )}
-        className="mb-4"
-      />
 
       <div className="flex justify-between items-center">
         <h3 className="font-semibold">Your Tasks</h3>
