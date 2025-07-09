@@ -4,7 +4,7 @@ import { Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type Language } from '@/lib/languageConfig';
 import { useLanguageStore } from '@/lib/stores/languageStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { translationService } from '@/lib/translationService';
 
 interface LanguageIndicatorProps {
@@ -15,6 +15,7 @@ interface LanguageIndicatorProps {
   showIcon?: boolean;
   className?: string;
   originalText?: string; // Add originalText prop to access the text content
+  onTranslationToggle?: (showTranslated: boolean) => void; // Callback to notify parent of translation state
 }
 
 export default function LanguageIndicator({
@@ -25,8 +26,10 @@ export default function LanguageIndicator({
   showIcon = true,
   className,
   originalText,
+  onTranslationToggle,
 }: LanguageIndicatorProps) {
   const currentLanguage = useLanguageStore((state) => state.currentLanguage);
+  const [showTranslated, setShowTranslated] = useState(false);
 
   // Check if detected language is different from current language
   useEffect(() => {
@@ -92,6 +95,28 @@ export default function LanguageIndicator({
     return null;
   }
 
+  // Get current translation
+  const currentTranslation = originalText
+    ? translationService.getTranslation(
+        translationService.registerText(originalText),
+        currentLanguage.code
+      )
+    : undefined;
+
+  const handleClick = () => {
+    const newShowTranslated = !showTranslated;
+    setShowTranslated(newShowTranslated);
+    onTranslationToggle?.(newShowTranslated);
+
+    if (newShowTranslated && currentTranslation?.translatedText) {
+      console.log(
+        `Showing translation: "${originalText}" -> "${currentTranslation.translatedText}"`
+      );
+    } else {
+      console.log(`Showing original text: "${originalText}"`);
+    }
+  };
+
   const sizeClasses = {
     sm: 'text-xs',
     md: 'text-sm',
@@ -105,16 +130,17 @@ export default function LanguageIndicator({
   };
 
   return (
-    <div
+    <button
+      onClick={handleClick}
       className={cn(
-        'flex items-center gap-1 text-gray-500 dark:text-gray-400',
+        'flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer',
         sizeClasses[size],
         className
       )}
-      title={`Detected language: ${language.label}`}
+      title={`Click to ${showTranslated ? 'show original' : 'show translation'} (${language.label})`}
     >
       {showIcon && <Globe className={iconSizes[size]} />}
       <span>{language.emoji}</span>
-    </div>
+    </button>
   );
 }

@@ -12,6 +12,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useEffect, useState, useMemo } from 'react';
 import { useT, useTranslations } from '@/hooks/useTranslation';
+import { translationService } from '@/lib/translationService';
 import {
   useLanguageDetection,
   useLanguageDetections,
@@ -58,6 +59,11 @@ export default function TaskItem({
   const [showFeedback, setshowFeedback] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [needsRefetch, setNeedsRefetch] = useState(false);
+  const [showLabelTranslated, setShowLabelTranslated] = useState(false);
+  const [showNotesTranslated, setShowNotesTranslated] = useState(false);
+  const [showCommentTranslated, setShowCommentTranslated] = useState<
+    Record<number, boolean>
+  >({});
 
   // Language detection for task content
   const labelLanguageDetection = useLanguageDetection(label);
@@ -69,7 +75,26 @@ export default function TaskItem({
   const deleteTaskAriaLabel = useT('Delete task');
   const hideNotesLabel = useT('Hide Notes');
   const viewNotesLabel = useT('View Notes');
-  const translatedNotes = useT(notes || '');
+
+  // Get translations for display
+  const [labelTranslation, setLabelTranslation] = useState<any>(null);
+  const [notesTranslation, setNotesTranslation] = useState<any>(null);
+
+  useEffect(() => {
+    const labelId = translationService.registerText(label);
+    const translation = translationService.getTranslation(labelId, 'en');
+    setLabelTranslation(translation);
+  }, [label]);
+
+  useEffect(() => {
+    if (notes) {
+      const notesId = translationService.registerText(notes);
+      const translation = translationService.getTranslation(notesId, 'en');
+      setNotesTranslation(translation);
+    } else {
+      setNotesTranslation(null);
+    }
+  }, [notes]);
   const noCommentsText = useT('No comments yet');
   const addCommentPlaceholder = useT('Add a comment...');
   const sendButtonText = useT('Send');
@@ -173,7 +198,9 @@ export default function TaskItem({
                     completed && 'line-through text-muted-foreground'
                   )}
                 >
-                  {useT(label)}
+                  {showLabelTranslated && labelTranslation?.translatedText
+                    ? labelTranslation.translatedText
+                    : label}
                 </p>
                 <LanguageIndicator
                   language={labelLanguageDetection.languageObject}
@@ -181,6 +208,7 @@ export default function TaskItem({
                   isDetecting={labelLanguageDetection.isDetecting}
                   size="sm"
                   originalText={label}
+                  onTranslationToggle={setShowLabelTranslated}
                 />
               </div>
 
@@ -188,7 +216,9 @@ export default function TaskItem({
                 <div className="w-full border-t-1 pt-1 text-md">
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground flex-1">
-                      {translatedNotes}
+                      {showNotesTranslated && notesTranslation?.translatedText
+                        ? notesTranslation.translatedText
+                        : notes}
                     </span>
                     <LanguageIndicator
                       language={notesLanguageDetection.languageObject}
@@ -196,6 +226,7 @@ export default function TaskItem({
                       isDetecting={notesLanguageDetection.isDetecting}
                       size="sm"
                       originalText={notes}
+                      onTranslationToggle={setShowNotesTranslated}
                     />
                   </div>
                 </div>
@@ -242,8 +273,10 @@ export default function TaskItem({
                       </div>
                       <div className="flex items-start gap-2 mt-1">
                         <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap flex-1">
-                          {translatedComments[idx]?.translatedText ??
-                            comment.comment_content}
+                          {showCommentTranslated[idx] &&
+                          translatedComments[idx]?.translatedText
+                            ? translatedComments[idx].translatedText
+                            : comment.comment_content}
                         </p>
                         <LanguageIndicator
                           language={
@@ -259,6 +292,12 @@ export default function TaskItem({
                           size="sm"
                           className="mt-1"
                           originalText={comment.comment_content}
+                          onTranslationToggle={(showTranslated) => {
+                            setShowCommentTranslated((prev) => ({
+                              ...prev,
+                              [idx]: showTranslated,
+                            }));
+                          }}
                         />
                       </div>
                     </div>
