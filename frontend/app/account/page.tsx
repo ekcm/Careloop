@@ -26,7 +26,7 @@ const AuthPage: FC = () => {
     let url =
       process?.env?.NEXT_PUBLIC_SITE_URL ??
       process?.env?.NEXT_PUBLIC_VERCEL_URL ??
-      'http://localhost:3000/';
+      'http://localhost:3000/account';
     url = url.startsWith('http') ? url : `https://${url}`;
     return url.endsWith('/') ? url : `${url}/`;
   };
@@ -77,12 +77,19 @@ const AuthPage: FC = () => {
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
+      const baseUrl = getURL();
+
+      const redirectUrl = `${baseUrl}account`;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: getURL() },
+        options: {
+          redirectTo: redirectUrl,
+        },
       });
       if (error) throw error;
-    } catch {
+    } catch (error) {
+      console.error('Google login failed:', error);
       toast.error('Google login failed.');
     } finally {
       setLoading(false);
