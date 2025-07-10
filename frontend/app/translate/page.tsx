@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Copy,
   ArrowLeftRight,
@@ -10,7 +10,11 @@ import {
   Languages,
 } from 'lucide-react';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
-import { transcribeAudio, validateAudioFile } from '@/lib/elevenlabsService';
+import {
+  transcribeAudio,
+  validateAudioFile,
+  textToSpeech,
+} from '@/lib/elevenlabsService';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { LANGUAGES } from '@/lib/languageConfig';
 import { translationService } from '@/lib/translationService';
@@ -19,6 +23,10 @@ export default function TranslatePage() {
   const [sourceText, setSourceText] = useState('');
   const [translatedText, setTranslatedText] = useState('');
   const [isTranslating, setIsTranslating] = useState(false);
+  const [isSourceSpeaking, setIsSourceSpeaking] = useState(false);
+  const [isTargetSpeaking, setIsTargetSpeaking] = useState(false);
+  const [speakError, setSpeakError] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [sourceLanguage, setSourceLanguage] = useState(LANGUAGES[0]);
   const [targetLanguage, setTargetLanguage] = useState(
@@ -43,6 +51,19 @@ export default function TranslatePage() {
     null
   );
   const [translationError, setTranslationError] = useState<string | null>(null);
+
+  // Initialize audio element
+  useEffect(() => {
+    audioRef.current = new Audio();
+
+    // Clean up audio when component unmounts
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   // Handle transcription when audio is recorded
   useEffect(() => {
@@ -136,28 +157,81 @@ export default function TranslatePage() {
     }
   };
 
-  const handleSourceSpeaker = () => {
+  const handleSourceSpeaker = async () => {
     if (!sourceText || sourceText.trim() === '') {
       console.log('No text available for voice playback in source language');
       return;
     }
-    // Placeholder for source text-to-speech
-    console.log('Source speaker clicked with text:', sourceText);
+
+    // Stop any currently playing audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+
+    setSpeakError(null);
+    setIsSourceSpeaking(true);
+
+    try {
+      // Call the text-to-speech service
+      const result = await textToSpeech(sourceText, sourceLanguage.code);
+
+      if (result.error) {
+        setSpeakError(result.error);
+        setIsSourceSpeaking(false);
+      } else if (result.audioUrl && audioRef.current) {
+        // Play the audio
+        audioRef.current.src = result.audioUrl;
+        audioRef.current.onended = () => setIsSourceSpeaking(false);
+        audioRef.current.onerror = () => {
+          setSpeakError('Failed to play audio');
+          setIsSourceSpeaking(false);
+        };
+        await audioRef.current.play();
+      }
+    } catch (error) {
+      console.error('Source speaker error:', error);
+      setSpeakError('Failed to play audio');
+      setIsSourceSpeaking(false);
+    }
   };
 
-  const handleTargetSpeaker = () => {
+  const handleTargetSpeaker = async () => {
     if (!translatedText || translatedText.trim() === '') {
       console.log('No text available for voice playback in target language');
       return;
     }
-    // Placeholder for target text-to-speech
-    console.log('Target speaker clicked with text:', translatedText);
-  };
 
-  //   const handleClear = () => {
-  //     setSourceText('');
-  //     setTranslatedText('');
-  //   };
+    // Stop any currently playing audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+
+    setSpeakError(null);
+    setIsTargetSpeaking(true);
+
+    try {
+      // Call the text-to-speech service
+      const result = await textToSpeech(translatedText, targetLanguage.code);
+
+      if (result.error) {
+        setSpeakError(result.error);
+        setIsTargetSpeaking(false);
+      } else if (result.audioUrl && audioRef.current) {
+        // Play the audio
+        audioRef.current.src = result.audioUrl;
+        audioRef.current.onended = () => setIsTargetSpeaking(false);
+        audioRef.current.onerror = () => {
+          setSpeakError('Failed to play audio');
+          setIsTargetSpeaking(false);
+        };
+        await audioRef.current.play();
+      }
+    } catch (error) {
+      console.error('Target speaker error:', error);
+      setSpeakError('Failed to play audio');
+      setIsTargetSpeaking(false);
+    }
+  };
 
   const handleCopySource = async () => {
     if (sourceText) {
@@ -172,9 +246,11 @@ export default function TranslatePage() {
   };
 
   const handleSwapLanguages = () => {
+    // Swap languages
     setSourceLanguage(targetLanguage);
     setTargetLanguage(sourceLanguage);
 
+    // Swap text content
     const tempText = sourceText;
     setSourceText(translatedText);
     setTranslatedText(tempText);
@@ -217,7 +293,8 @@ export default function TranslatePage() {
               </button>
               <button
                 onClick={handleSourceSpeaker}
-                className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+                disabled={isSourceSpeaking || !sourceText}
+                className={`p-2 ${isSourceSpeaking ? 'text-blue-500' : 'text-gray-500 hover:text-gray-700'} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
                 title="Listen"
               >
                 <Volume2 size={16} />
@@ -255,7 +332,9 @@ export default function TranslatePage() {
             </div>
             <button
               onClick={handleTargetSpeaker}
-              className="absolute bottom-3 right-3 p-2 text-gray-500 hover:text-gray-700 transition-colors"
+              disabled={isTargetSpeaking || !translatedText}
+              className={`absolute bottom-3 right-3 p-2 ${isTargetSpeaking ? 'text-blue-500' : 'text-gray-500 hover:text-gray-700'} transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+              title="Listen"
             >
               <Volume2 size={16} />
             </button>
@@ -301,14 +380,21 @@ export default function TranslatePage() {
           </button>
 
           {/* Error Messages */}
-          {(recordingError || transcriptionError || translationError) && (
+          {(recordingError ||
+            transcriptionError ||
+            translationError ||
+            speakError) && (
             <div className="text-red-500 text-sm text-center max-w-xs">
-              {recordingError || transcriptionError || translationError}
+              {recordingError ||
+                transcriptionError ||
+                translationError ||
+                speakError}
               <button
                 onClick={() => {
                   clearError();
                   setTranscriptionError(null);
                   setTranslationError(null);
+                  setSpeakError(null);
                 }}
                 className="ml-2 underline hover:no-underline"
               >
@@ -326,6 +412,10 @@ export default function TranslatePage() {
 
           {isTranslating && (
             <div className="text-green-600 text-sm">Translating...</div>
+          )}
+
+          {(isSourceSpeaking || isTargetSpeaking) && (
+            <div className="text-blue-600 text-sm">Speaking...</div>
           )}
         </div>
       </div>

@@ -3,6 +3,11 @@ export interface TranscriptionResult {
   error?: string;
 }
 
+export interface TextToSpeechResult {
+  audioUrl?: string;
+  error?: string;
+}
+
 export const transcribeAudio = async (
   audioBlob: Blob
 ): Promise<TranscriptionResult> => {
@@ -39,6 +44,52 @@ export const transcribeAudio = async (
     return {
       text: '',
       error: 'An unexpected error occurred during transcription.',
+    };
+  }
+};
+
+// New function to convert text to speech
+export const textToSpeech = async (
+  text: string,
+  languageCode: string
+): Promise<TextToSpeechResult> => {
+  try {
+    if (!text || text.trim() === '') {
+      return { error: 'Text cannot be empty' };
+    }
+
+    // Call our Next.js API route
+    const response = await fetch('/api/text-to-speech', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text,
+        languageCode,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return {
+        error: result.error || 'Failed to convert text to speech',
+      };
+    }
+
+    return {
+      audioUrl: result.audioUrl,
+    };
+  } catch (error) {
+    console.error('Text-to-speech error:', error);
+
+    if (error instanceof Error) {
+      return { error: `Text-to-speech failed: ${error.message}` };
+    }
+
+    return {
+      error: 'An unexpected error occurred during text-to-speech conversion.',
     };
   }
 };
