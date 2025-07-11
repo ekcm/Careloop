@@ -32,7 +32,7 @@ export default function TaskDisplay({
   return (
     <Tabs defaultValue={todayText} className="w-full">
       <TabsList className="w-full grid grid-cols-3">
-        <TabsTrigger value={todayText} className="w-full" defaultChecked>
+        <TabsTrigger value={todayText} className="w-full">
           {todaysTasksText} ({todaysTasks.length})
         </TabsTrigger>
         <TabsTrigger value={futureText} className="w-full">
@@ -43,7 +43,7 @@ export default function TaskDisplay({
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value={todayText} forceMount>
+      <TabsContent value={todayText}>
         <AnimatePresence mode="wait">
           <motion.div
             key={todayText}
