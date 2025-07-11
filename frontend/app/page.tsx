@@ -148,6 +148,7 @@ export default function HomePage() {
       ...taskData,
       user_id: session.user.id,
       group_id: group.id,
+      author_name: userProfile?.display_name || '',
     };
     try {
       const addedTask = await addTodo(newTodoData);
@@ -213,7 +214,7 @@ export default function HomePage() {
                 onDelete={() => handleDeleteTask(task.id)}
                 todo_id={task.id}
                 user_id={userProfile?.id || ''}
-                author_name={userProfile?.display_name || ''}
+                author_name={task.author_name || ''}
               />
             </motion.div>
           ))}

@@ -21,6 +21,7 @@ export interface Todo {
   notes: string | null;
   group_id: string;
   icon: string;
+  author_name: string;
 }
 
 export interface NewTodo {
@@ -31,6 +32,7 @@ export interface NewTodo {
   reward?: string | null;
   group_id?: string;
   icon: string;
+  author_name: string;
 }
 
 export interface Group {
