@@ -27,9 +27,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface AddTaskProps {
   onAdd: (task: Omit<NewTodo, 'user_id' | 'group_id'>) => void;
+  userName?: string;
 }
 
-export default function AddTask({ onAdd }: AddTaskProps) {
+export default function AddTask({ onAdd, userName }: AddTaskProps) {
   const [open, setOpen] = useState(false);
   const [label, setLabel] = useState('');
   const [notes, setNotes] = useState('');
@@ -84,6 +85,7 @@ export default function AddTask({ onAdd }: AddTaskProps) {
       notes: notes.trim() || null,
       reward: reward.trim() || null,
       icon: icon || 'checklist',
+      author_name: userName || '',
     };
 
     onAdd(taskToAdd);

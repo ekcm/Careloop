@@ -282,7 +282,7 @@ export default function HomePage() {
 
       <div className="flex justify-between items-center">
         <h3 className="font-semibold">Your Tasks</h3>
-        <AddTask onAdd={handleAddTask} />
+        <AddTask onAdd={handleAddTask} userName={userProfile?.display_name} />
       </div>
 
       {error && <p className="text-red-500 my-2">{error}</p>}
