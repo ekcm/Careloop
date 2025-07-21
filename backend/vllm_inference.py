@@ -48,8 +48,8 @@ VLLM_PORT = 8000
         "/root/.cache/vllm": vllm_cache_vol,
     },
 )
-@modal.concurrent(  # how many requests can one replica handle?
-    max_inputs=1
+@modal.concurrent( 
+    max_inputs=32  # Optimized for 8B model on H100
 )
 @modal.web_server(port=VLLM_PORT, startup_timeout=10 * MINUTES)
 def serve():

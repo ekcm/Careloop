@@ -57,10 +57,11 @@ This deployment uses:
 - **Startup Time**: ~5 minutes for first deployment
 - **Auto-scaling**: Scales down after 1 minute of inactivity
 - **Port**: 8000
+- **Concurrency**: 32 concurrent requests per replica (optimized for H100 + 8B model)
 
 ## Tests
 
-### Benchmarking SEA-LION against OpenAI 4.1-nano and 4.1-mini
+### Benchmarking SEA-LION against OpenAI Models
 
 1. Create a .env file with the following:
 
@@ -71,9 +72,26 @@ OPENAI_API_KEY=<<YOUR_OPENAI_API_KEY>>
 
 Use the Modal endpoint URL from the previous step
 
-2. Run `benchmark.py`
+2. Run basic performance comparison:
 
 ```bash
 python benchmark.py
 ```
-This will run an automated test to compare SEA-LION against OpenAI 4.1-nano and 4.1-mini
+
+This compares SEA-LION against OpenAI 4.1-nano and 4.1-mini on:
+
+- **Warms up SEA-LION** first to eliminate cold start bias
+- Time to first token (latency)
+- Tokens per second (throughput)
+
+3. Run concurrency stress test:
+
+```bash
+python concurrency
+```
+
+This async concurrency test compares SEA-LION against OpenAI 4.1-nano
+
+- **Warms up SEA-LION** first to eliminate cold start bias
+- Tests 1, 5, 10, 25, 50+ concurrent requests
+- Measures success rate under load, requests per second, average time to first token, and total system throughput
