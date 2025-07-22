@@ -1,5 +1,7 @@
 # Careloop
 
+![Careloop Banner](assets/Careloop_banner.png)
+
 A multilingual collaborative task management application with AI-powered translation and voice features.
 
 ![Next.js](https://img.shields.io/badge/Next.js-15-black) ![React](https://img.shields.io/badge/React-19-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Python](https://img.shields.io/badge/Python-3.12-yellow) ![Supabase](https://img.shields.io/badge/Supabase-Database-green)
