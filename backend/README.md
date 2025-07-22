@@ -1,11 +1,11 @@
 # Careloop Backend - SEA-LION Model Deployment
 
-Deploy aisingapore's Llama-SEA-LION-v3.5-8B-R model on Modal with vLLM inference.
+Deploy aisingapore's [Llama-SEA-LION-v3.5-8B-R model](https://huggingface.co/aisingapore/Llama-SEA-LION-v3.5-8B-R) on Nvidia H100 GPU using Modal with [vLLM](https://docs.vllm.ai/en/latest/) inference.
 
 ## Prerequisites
 
 - Python 3.12+
-- Modal account (sign up at modal.com)
+- Modal account (sign up at [modal.com](https://modal.com/))
 
 ## Setup
 
@@ -87,7 +87,7 @@ This compares SEA-LION against OpenAI 4.1-nano and 4.1-mini on:
 3. Run concurrency stress test:
 
 ```bash
-python concurrency
+python concurrency.py
 ```
 
 This async concurrency test compares SEA-LION against OpenAI 4.1-nano
