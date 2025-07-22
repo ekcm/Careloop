@@ -7,7 +7,7 @@ A multilingual collaborative task management application with AI-powered transla
 ## Features
 
 - **Multilingual Support** - Real-time translation with OpenAI GPT models
-- **Voice Integration** - Speech-to-text transcription and text-to-speech playback
+- **Voice Integration** - ElevenLabs-powered speech-to-text and text-to-speech
 - **Group Collaboration** - Shared task management with real-time updates
 - **Built-in encouragement** - Encouragement letter for Migrant Domestic Helper when daily tasks are completed
 - **AI Models** - Custom SEA-LION model deployment for performance comparison
